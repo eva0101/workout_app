@@ -1,0 +1,21 @@
+services:
+  workoutapp-postgres:
+    image: postgres:18.4-bookworm
+    container_name: workoutapp-env-postgres
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    ports:
+      - "127.0.0.1:5432:5432"
+    restart: unless-stopped
+
+  workoutapp-postgres-migrate:
+    image: migrate/migrate:v4.19.1
+    volumes:
+      - ${PROJECT_ROOT}/migrations:/migrations
+
+volumes:
+  postgres_data:
