@@ -6,16 +6,15 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
+    user: "${UID}:${GID}"
     volumes:
-      - postgres_data:/var/lib/postgresql
+      - ${PROJECT_ROOT}/out/pgdata:/var/lib/postgresql
     ports:
       - "127.0.0.1:5432:5432"
     restart: unless-stopped
 
   workoutapp-postgres-migrate:
     image: migrate/migrate:v4.19.1
+    user: "${UID}:${GID}"
     volumes:
       - ${PROJECT_ROOT}/migrations:/migrations
-
-volumes:
-  postgres_data:
