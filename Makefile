@@ -47,3 +47,8 @@ migrate-action:
 		-path /migrations \
 		-database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@workoutapp-postgres:5432/${POSTGRES_DB}?sslmode=disable \
 		$(action) $(steps)
+
+todoapp-run:
+	@export POSTGRES_HOST=localhost && \
+	go mod tidy && \
+	go run ${PROJECT_ROOT}/cmd/main.go
