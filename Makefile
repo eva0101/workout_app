@@ -8,7 +8,7 @@ env-up:
 	@docker compose up -d workoutapp-postgres
 
 env-down:
-	@dokcer compose down workoutapp-postgres
+	@docker compose down workoutapp-postgres
 
 env-cleanup:
 	@read -p "Очистить все данные DB? [y/n]: " ans; \
@@ -48,7 +48,7 @@ migrate-action:
 		-database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@workoutapp-postgres:5432/${POSTGRES_DB}?sslmode=disable \
 		$(action) $(steps)
 
-todoapp-run:
+app-run:
 	@export POSTGRES_HOST=localhost && \
 	go mod tidy && \
 	go run ${PROJECT_ROOT}/cmd/main.go

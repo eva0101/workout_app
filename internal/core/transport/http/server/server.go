@@ -12,8 +12,12 @@ type HTTPServer struct {
 	config Config
 }
 
-func NewHTTPServer(config Config) *HTTPServer {
+func NewHTTPServer(
+	config Config,
+	mux *http.ServeMux,
+) *HTTPServer {
 	return &HTTPServer{
+		mux:    mux,
 		config: config,
 	}
 }
