@@ -18,3 +18,10 @@ services:
     user: "${UID}:${GID}"
     volumes:
       - ${PROJECT_ROOT}/migrations:/migrations
+
+networks:
+  default:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.123.0.0/16

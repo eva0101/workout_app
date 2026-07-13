@@ -1,6 +1,6 @@
 CREATE TABLE workoutapp.program (
     id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES workoutapp.users(id),
+    user_id UUID NOT NULL REFERENCES workoutapp.users(id),
     name VARCHAR(100) NOT NULL CHECK(char_length(name) BETWEEN 3 AND 100),
     started_at TIMESTAMPTZ NOT NULL,
     completed_at TIMESTAMPTZ
