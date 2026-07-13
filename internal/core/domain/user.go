@@ -1,9 +1,13 @@
 package core_domain
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type User struct {
-	ID        int       `json:"id"`
+	ID        uuid.UUID `json:"id"`
 	Login     string    `json:"login"`
 	CreatedAt time.Time `json:"created_at"`
 }

@@ -7,7 +7,7 @@ import (
 	core_http_errors "workout_app/internal/core/transport/http/errors"
 )
 
-func (h *AuthorizationHTTPHandler) RegisterUser(rw http.ResponseWriter, r *http.Request) {
+func (h *AuthorizationHTTPHandler) AuthorizationUser(rw http.ResponseWriter, r *http.Request) {
 	var req core_dto.DTOAuthorizationUserRequest
 
 	decoder := json.NewDecoder(r.Body)
@@ -23,7 +23,7 @@ func (h *AuthorizationHTTPHandler) RegisterUser(rw http.ResponseWriter, r *http.
 		return
 	}
 
-	user, err := h.authorizationService.RegisterUser(
+	token, err := h.authorizationService.AuthorizationUser(
 		r.Context(),
 		req.Login,
 		req.Password,
@@ -34,9 +34,8 @@ func (h *AuthorizationHTTPHandler) RegisterUser(rw http.ResponseWriter, r *http.
 	}
 
 	rw.Header().Set("Content-Type", "application/json")
-	rw.WriteHeader(http.StatusCreated)
 
-	if err := json.NewEncoder(rw).Encode(user); err != nil {
+	if err := json.NewEncoder(rw).Encode(token); err != nil {
 		return
 	}
 }

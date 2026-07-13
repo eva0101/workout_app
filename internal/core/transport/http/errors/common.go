@@ -23,6 +23,9 @@ func WriteError(rw http.ResponseWriter, err error) {
 	case errors.Is(err, core_errors.ErrPasswordManySymbols):
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 
+	case errors.Is(err, core_errors.ErrInvalidCredentials):
+		http.Error(rw, err.Error(), http.StatusConflict)
+
 	default:
 		http.Error(rw, "internal error", http.StatusInternalServerError)
 	}

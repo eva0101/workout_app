@@ -1,6 +1,6 @@
 CREATE TABLE workoutapp.statistics (
     id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES workoutapp.users(id),
+    user_id UUID NOT NULL REFERENCES workoutapp.users(id),
     exercise_id INT NOT NULL,
 
     total_num_sets INT NOT NULL DEFAULT 0,
