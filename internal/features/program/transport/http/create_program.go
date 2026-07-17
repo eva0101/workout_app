@@ -17,7 +17,7 @@ func (h *ProgramHTTPHandler) CreateProgram(rw http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	var req DTOCreateProgramRequest
+	var req CreateProgramDTORequest
 
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()

@@ -19,6 +19,11 @@ type ProgramService interface {
 		userID uuid.UUID,
 		name string,
 	) (core_domain.Program, error)
+
+	GetPrograms(
+		ctx context.Context,
+		userID uuid.UUID,
+	) ([]core_domain.Program, error)
 }
 
 func NewProgramHTTPHandler(
@@ -35,6 +40,12 @@ func (h *ProgramHTTPHandler) Routes() []core_http_server.Route {
 			Method:  http.MethodPost,
 			Path:    "/programs",
 			Handler: http.HandlerFunc(h.CreateProgram),
+			Auth:    true,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/programs",
+			Handler: http.HandlerFunc(h.GetPrograms),
 			Auth:    true,
 		},
 	}

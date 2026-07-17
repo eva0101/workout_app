@@ -17,6 +17,11 @@ type ProgramRepository interface {
 		userID uuid.UUID,
 		name string,
 	) (core_domain.Program, error)
+
+	GetPrograms(
+		ctx context.Context,
+		userID uuid.UUID,
+	) ([]core_domain.Program, error)
 }
 
 func NewProgramService(

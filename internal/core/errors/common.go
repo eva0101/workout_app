@@ -3,12 +3,13 @@ package core_errors
 import "errors"
 
 var (
-	ErrPasswordFewSymbols  = errors.New("The password must be more than 8 characters long")
-	ErrPasswordManySymbols = errors.New("The password must be less than 64 characters")
+	ErrPasswordFewSymbols  = errors.New("the password must be more than 8 characters long")
+	ErrPasswordManySymbols = errors.New("the password must be less than 64 characters")
 
-	ErrLoginFewSymbols  = errors.New("The login must be more than 3 characters long")
-	ErrLoginManySymbols = errors.New("The login must be less than 32 characters")
-	ErrLoginExists      = errors.New("User already exists")
+	ErrLoginFewSymbols  = errors.New("the login must be more than 3 characters long")
+	ErrLoginManySymbols = errors.New("the login must be less than 32 characters")
+	ErrLoginExists      = errors.New("user already exists")
 
-	ErrInvalidCredentials = errors.New("Login or password is incorrect")
+	ErrInvalidCredentials = errors.New("login or password is incorrect")
+	ErrInvalidArgument    = errors.New("invalid argument")
 )
