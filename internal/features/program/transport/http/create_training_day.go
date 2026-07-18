@@ -10,39 +10,33 @@ import (
 	"github.com/google/uuid"
 )
 
-func (h *ProgramHTTPHandler) GetProgram(rw http.ResponseWriter, r *http.Request) {
+func (h *ProgramHTTPHandler) CreateTrainingDay(rw http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(core_middleware.UserIDKey).(uuid.UUID)
 	if !ok {
 		http.Error(rw, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	id, err := core_http_request.GetIntPathValue(r, "id")
+	programID, err := core_http_request.GetIntPathValue(r, "id")
 	if err != nil {
-		http.Error(rw, "failed to get userID path value", http.StatusBadRequest)
+		http.Error(rw, "failed to get programID path value", http.StatusBadRequest)
 		return
 	}
 
-	program, trainingDays, err := h.programService.GetProgram(
+	trainingDay, err := h.programService.CreateTrainingDay(
 		r.Context(),
 		userID,
-		id,
+		programID,
 	)
 	if err != nil {
 		core_http_errors.WriteError(rw, err)
 		return
 	}
 
-	response := ProgramDetailsDTOResponse{
-		ID:           program.ID,
-		Name:         program.Name,
-		TrainingDays: trainingDays,
-	}
-
 	rw.Header().Set("Content-Type", "application/json")
-	rw.WriteHeader(http.StatusOK)
+	rw.WriteHeader(http.StatusCreated)
 
-	if err := json.NewEncoder(rw).Encode(response); err != nil {
+	if err := json.NewEncoder(rw).Encode(trainingDay); err != nil {
 		return
 	}
 }

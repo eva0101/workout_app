@@ -14,12 +14,12 @@ func (r *ProgramRepository) GetProgram(
 	ctx context.Context,
 	userID uuid.UUID,
 	id int,
-) (core_domain.Program, []core_domain.TrainingDays, error) {
+) (core_domain.Program, []core_domain.TrainingDay, error) {
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 
 	var program core_domain.Program
-	trainingDays := make([]core_domain.TrainingDays, 0)
+	trainingDays := make([]core_domain.TrainingDay, 0)
 
 	row := r.pool.QueryRow(
 		ctx,
@@ -52,7 +52,7 @@ func (r *ProgramRepository) GetProgram(
 	defer rows.Close()
 
 	for rows.Next() {
-		var trainingDay core_domain.TrainingDays
+		var trainingDay core_domain.TrainingDay
 
 		err := rows.Scan(
 			&trainingDay.ID,

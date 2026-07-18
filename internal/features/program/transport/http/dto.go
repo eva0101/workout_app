@@ -16,9 +16,9 @@ type ProgramDTOResponse struct {
 }
 
 type ProgramDetailsDTOResponse struct {
-	ID           int                        `json:"id"`
-	Name         string                     `json:"name"`
-	TrainingDays []core_domain.TrainingDays `json:"training_days"`
+	ID           int                       `json:"id"`
+	Name         string                    `json:"name"`
+	TrainingDays []core_domain.TrainingDay `json:"training_days"`
 }
 
 func ToProgramResponse(

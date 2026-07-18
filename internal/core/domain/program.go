@@ -13,7 +13,7 @@ type Program struct {
 	StartedAt time.Time
 }
 
-type TrainingDays struct {
+type TrainingDay struct {
 	ID        int
 	ProgramID int
 	DayNumber int
