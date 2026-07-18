@@ -12,3 +12,9 @@ type Program struct {
 	Name      string
 	StartedAt time.Time
 }
+
+type TrainingDays struct {
+	ID        int
+	ProgramID int
+	DayNumber int
+}

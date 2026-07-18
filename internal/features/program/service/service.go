@@ -22,6 +22,12 @@ type ProgramRepository interface {
 		ctx context.Context,
 		userID uuid.UUID,
 	) ([]core_domain.Program, error)
+
+	GetProgram(
+		ctx context.Context,
+		userID uuid.UUID,
+		id int,
+	) (core_domain.Program, []core_domain.TrainingDays, error)
 }
 
 func NewProgramService(

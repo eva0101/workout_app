@@ -2,7 +2,6 @@ package program_transport_http
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	core_middleware "workout_app/internal/core/middleware"
 	core_http_errors "workout_app/internal/core/transport/http/errors"
@@ -29,7 +28,6 @@ func (h *ProgramHTTPHandler) GetPrograms(rw http.ResponseWriter, r *http.Request
 	response := ToProgramResponse(programs)
 
 	if err := json.NewEncoder(rw).Encode(response); err != nil {
-		fmt.Println("error")
 		return
 	}
 }

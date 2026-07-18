@@ -15,6 +15,12 @@ type ProgramDTOResponse struct {
 	StartedAt time.Time `json:"started_at"`
 }
 
+type ProgramDetailsDTOResponse struct {
+	ID           int                        `json:"id"`
+	Name         string                     `json:"name"`
+	TrainingDays []core_domain.TrainingDays `json:"training_days"`
+}
+
 func ToProgramResponse(
 	programs []core_domain.Program,
 ) []ProgramDTOResponse {
