@@ -13,8 +13,21 @@ type Program struct {
 	StartedAt time.Time
 }
 
-type TrainingDay struct {
+type TrainingDays struct {
 	ID        int
 	ProgramID int
 	DayNumber int
+}
+
+type TrainingDay struct {
+	ID        int
+	DayNumber int
+	Exercises []TrainingExercise
+}
+
+type TrainingExercise struct {
+	ID         int
+	ExerciseID int
+	Sets       int
+	Reps       int
 }

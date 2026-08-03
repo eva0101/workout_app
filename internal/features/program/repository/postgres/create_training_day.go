@@ -14,7 +14,7 @@ func (r *ProgramRepository) CreateTrainingDay(
 	ctx context.Context,
 	userID uuid.UUID,
 	programID int,
-) (core_domain.TrainingDay, error) {
+) (core_domain.TrainingDays, error) {
 
 	query := `
 	INSERT INTO workoutapp.training_days(program_id, day_number)
@@ -30,7 +30,7 @@ func (r *ProgramRepository) CreateTrainingDay(
 	RETURNING id, program_id, day_number;
 	`
 
-	var trainingDay core_domain.TrainingDay
+	var trainingDay core_domain.TrainingDays
 
 	err := r.pool.QueryRow(
 		ctx,
@@ -44,10 +44,10 @@ func (r *ProgramRepository) CreateTrainingDay(
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return core_domain.TrainingDay{}, core_errors.ErrProgramNotFound
+			return core_domain.TrainingDays{}, core_errors.ErrProgramNotFound
 		}
 
-		return core_domain.TrainingDay{}, err
+		return core_domain.TrainingDays{}, err
 	}
 
 	return trainingDay, nil

@@ -27,12 +27,18 @@ type ProgramRepository interface {
 		ctx context.Context,
 		userID uuid.UUID,
 		id int,
-	) (core_domain.Program, []core_domain.TrainingDay, error)
+	) (core_domain.Program, []core_domain.TrainingDays, error)
 
 	CreateTrainingDay(
 		ctx context.Context,
 		userID uuid.UUID,
 		programID int,
+	) (core_domain.TrainingDays, error)
+
+	GetTrainingDay(
+		ctx context.Context,
+		userID uuid.UUID,
+		dayID int,
 	) (core_domain.TrainingDay, error)
 }
 

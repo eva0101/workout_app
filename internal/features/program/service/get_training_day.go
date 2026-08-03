@@ -7,18 +7,18 @@ import (
 	"github.com/google/uuid"
 )
 
-func (s *ProgramService) CreateTrainingDay(
+func (s *ProgramService) GetTrainingDay(
 	ctx context.Context,
 	userID uuid.UUID,
-	programID int,
-) (core_domain.TrainingDays, error) {
-	trainingDay, err := s.programRepository.CreateTrainingDay(
+	dayID int,
+) (core_domain.TrainingDay, error) {
+	trainingDay, err := s.programRepository.GetTrainingDay(
 		ctx,
 		userID,
-		programID,
+		dayID,
 	)
 	if err != nil {
-		return core_domain.TrainingDays{}, err
+		return core_domain.TrainingDay{}, err
 	}
 
 	return trainingDay, nil

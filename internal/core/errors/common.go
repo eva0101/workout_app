@@ -13,5 +13,6 @@ var (
 	ErrInvalidCredentials = errors.New("login or password is incorrect")
 	ErrInvalidArgument    = errors.New("invalid argument")
 
-	ErrProgramNotFound = errors.New("program not found")
+	ErrProgramNotFound     = errors.New("program not found")
+	ErrTrainingDayNotFound = errors.New("training day not found")
 )
