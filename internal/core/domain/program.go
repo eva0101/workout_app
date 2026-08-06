@@ -29,5 +29,10 @@ type TrainingExercise struct {
 	ID         int
 	ExerciseID int
 	Sets       int
-	Reps       int
+}
+
+type Exercise struct {
+	ID           int
+	NameExercise string
+	Sets         int
 }

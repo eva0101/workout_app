@@ -42,6 +42,14 @@ type ProgramService interface {
 		userID uuid.UUID,
 		dayID int,
 	) (core_domain.TrainingDay, error)
+
+	CreateExercise(
+		ctx context.Context,
+		userID uuid.UUID,
+		trainingDayID int,
+		exerciseID int,
+		sets int,
+	) (core_domain.Exercise, error)
 }
 
 func NewProgramHTTPHandler(
@@ -82,6 +90,12 @@ func (h *ProgramHTTPHandler) Routes() []core_http_server.Route {
 			Method:  http.MethodGet,
 			Path:    "/days/{id}",
 			Handler: http.HandlerFunc(h.GetTrainingDay),
+			Auth:    true,
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/days/{id}/exercises",
+			Handler: http.HandlerFunc(h.CreateExercise),
 			Auth:    true,
 		},
 	}

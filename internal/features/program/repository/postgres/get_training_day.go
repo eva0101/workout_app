@@ -30,8 +30,7 @@ func (r *ProgramRepository) GetTrainingDay(
 			td.day_number,
 			tde.id,
 			tde.exercise_id,
-			tde.sets,
-			tde.reps
+			tde.sets
 		FROM workoutapp.training_days td
 		JOIN workoutapp.program p
 		ON td.program_id = p.id
@@ -57,7 +56,6 @@ func (r *ProgramRepository) GetTrainingDay(
 			exerciseTableID *int
 			exerciseID      *int
 			sets            *int
-			reps            *int
 		)
 
 		err := rows.Scan(
@@ -66,7 +64,6 @@ func (r *ProgramRepository) GetTrainingDay(
 			&exerciseTableID,
 			&exerciseID,
 			&sets,
-			&reps,
 		)
 		if err != nil {
 			return core_domain.TrainingDay{}, fmt.Errorf("scan training day: %w", err)
@@ -77,7 +74,6 @@ func (r *ProgramRepository) GetTrainingDay(
 				ID:         *exerciseTableID,
 				ExerciseID: *exerciseID,
 				Sets:       *sets,
-				Reps:       *reps,
 			})
 		}
 	}

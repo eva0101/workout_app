@@ -40,6 +40,14 @@ type ProgramRepository interface {
 		userID uuid.UUID,
 		dayID int,
 	) (core_domain.TrainingDay, error)
+
+	CreateExercise(
+		ctx context.Context,
+		userID uuid.UUID,
+		trainingDayID int,
+		exerciseID int,
+		sets int,
+	) (core_domain.Exercise, error)
 }
 
 func NewProgramService(

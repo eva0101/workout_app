@@ -15,4 +15,5 @@ var (
 
 	ErrProgramNotFound     = errors.New("program not found")
 	ErrTrainingDayNotFound = errors.New("training day not found")
+	ErrExerciseNotFound    = errors.New("exercise not found")
 )

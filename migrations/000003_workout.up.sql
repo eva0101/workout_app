@@ -23,9 +23,15 @@ CREATE TABLE workoutapp.workout_exercise (
     exercise_id INT NOT NULL REFERENCES workoutapp.exercise(id),
     
     status VARCHAR(20) NOT NULL DEFAULT 'planned'
-        CHECK(status IN ('planned', 'in_progress', 'completed')),
+        CHECK(status IN ('planned', 'in_progress', 'completed'))
+);
 
-    sets_done INT CHECK(sets_done >= 0),
+CREATE TABLE workoutapp.workout_set (
+    id SERIAL PRIMARY KEY,
+    workout_exercise_id INT NOT NULL REFERENCES workoutapp.workout_exercise(id),
+
+    set_number INT NOT NULL,
     reps_done INT CHECK(reps_done >= 0),
+    weight NUMERIC(5,2) CHECK(weight >= 0),
     duration_sec INT CHECK(duration_sec >= 0)
 );

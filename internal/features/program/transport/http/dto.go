@@ -31,7 +31,11 @@ type TrainingExerciseResponse struct {
 	ID         int `json:"id"`
 	ExerciseID int `json:"exercise_id"`
 	Sets       int `json:"sets"`
-	Reps       int `json:"reps"`
+}
+
+type CreateExerciseDTORequest struct {
+	ExerciseID int `json:"exercise_id"`
+	Sets       int `json:"sets"`
 }
 
 func ToProgramResponse(
@@ -62,7 +66,6 @@ func ToTrainingDayResponse(day core_domain.TrainingDay) TrainingDayResponse {
 			ID:         exercise.ID,
 			ExerciseID: exercise.ExerciseID,
 			Sets:       exercise.Sets,
-			Reps:       exercise.Reps,
 		})
 	}
 
