@@ -39,12 +39,14 @@ func (h *AuthorizationHTTPHandler) Routes() []core_http_server.Route {
 		{
 			Method:  http.MethodPost,
 			Path:    "/auth/register",
-			Handler: h.RegisterUser,
+			Handler: http.HandlerFunc(h.RegisterUser),
+			Auth:    false,
 		},
 		{
 			Method:  http.MethodPost,
 			Path:    "/auth/login",
-			Handler: h.AuthorizationUser,
+			Handler: http.HandlerFunc(h.AuthorizationUser),
+			Auth:    false,
 		},
 	}
 }

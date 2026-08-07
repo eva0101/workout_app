@@ -9,7 +9,7 @@ import (
 
 type AuthorizationService struct {
 	authorizationRepository AuthorizationRepository
-	jwtService              *core_pkg_jwt.JWTService
+	jwtService              core_pkg_jwt.JWTService
 }
 
 type AuthorizationRepository interface {
@@ -27,7 +27,7 @@ type AuthorizationRepository interface {
 
 func NewAuthorizationService(
 	authorizationRepository AuthorizationRepository,
-	jwtService *core_pkg_jwt.JWTService,
+	jwtService core_pkg_jwt.JWTService,
 ) *AuthorizationService {
 	return &AuthorizationService{
 		authorizationRepository: authorizationRepository,

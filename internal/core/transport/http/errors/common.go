@@ -26,6 +26,18 @@ func WriteError(rw http.ResponseWriter, err error) {
 	case errors.Is(err, core_errors.ErrInvalidCredentials):
 		http.Error(rw, err.Error(), http.StatusConflict)
 
+	case errors.Is(err, core_errors.ErrProgramNotFound):
+		http.Error(rw, err.Error(), http.StatusNotFound)
+
+	case errors.Is(err, core_errors.ErrTrainingDayNotFound):
+		http.Error(rw, err.Error(), http.StatusNotFound)
+
+	case errors.Is(err, core_errors.ErrExerciseNotFound):
+		http.Error(rw, err.Error(), http.StatusNotFound)
+
+	case errors.Is(err, core_errors.ErrInvalidProgramName):
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+
 	default:
 		http.Error(rw, "internal error", http.StatusInternalServerError)
 	}
