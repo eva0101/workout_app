@@ -50,6 +50,31 @@ type ProgramService interface {
 		exerciseID int,
 		sets int,
 	) (core_domain.Exercise, error)
+
+	DeleteExercise(
+		ctx context.Context,
+		userID uuid.UUID,
+		trainingDayExerciseID int,
+	) error
+
+	DeleteTrainingDay(
+		ctx context.Context,
+		userID uuid.UUID,
+		trainingDayID int,
+	) error
+
+	DeleteProgram(
+		ctx context.Context,
+		userID uuid.UUID,
+		programID int,
+	) error
+
+	PatchProgram(
+		ctx context.Context,
+		userID uuid.UUID,
+		programID int,
+		name string,
+	) (core_domain.NewProgramName, error)
 }
 
 func NewProgramHTTPHandler(
@@ -96,6 +121,30 @@ func (h *ProgramHTTPHandler) Routes() []core_http_server.Route {
 			Method:  http.MethodPost,
 			Path:    "/days/{id}/exercises",
 			Handler: http.HandlerFunc(h.CreateExercise),
+			Auth:    true,
+		},
+		{
+			Method:  http.MethodDelete,
+			Path:    "/days/exercises/{id}",
+			Handler: http.HandlerFunc(h.DeleteExercise),
+			Auth:    true,
+		},
+		{
+			Method:  http.MethodDelete,
+			Path:    "/days/{id}",
+			Handler: http.HandlerFunc(h.DeleteTrainingDay),
+			Auth:    true,
+		},
+		{
+			Method:  http.MethodDelete,
+			Path:    "/programs/{id}",
+			Handler: http.HandlerFunc(h.DeleteProgram),
+			Auth:    true,
+		},
+		{
+			Method:  http.MethodPatch,
+			Path:    "/programs/{id}",
+			Handler: http.HandlerFunc(h.PatchProgram),
 			Auth:    true,
 		},
 	}

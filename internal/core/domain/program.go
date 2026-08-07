@@ -36,3 +36,7 @@ type Exercise struct {
 	NameExercise string
 	Sets         int
 }
+
+type NewProgramName struct {
+	Name string
+}

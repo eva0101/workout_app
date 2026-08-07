@@ -48,6 +48,31 @@ type ProgramRepository interface {
 		exerciseID int,
 		sets int,
 	) (core_domain.Exercise, error)
+
+	DeleteExercise(
+		ctx context.Context,
+		userID uuid.UUID,
+		trainingDayExerciseID int,
+	) error
+
+	DeleteTrainingDay(
+		ctx context.Context,
+		userID uuid.UUID,
+		trainingDayID int,
+	) error
+
+	DeleteProgram(
+		ctx context.Context,
+		userID uuid.UUID,
+		programID int,
+	) error
+
+	PatchProgram(
+		ctx context.Context,
+		userID uuid.UUID,
+		programID int,
+		name string,
+	) (core_domain.NewProgramName, error)
 }
 
 func NewProgramService(

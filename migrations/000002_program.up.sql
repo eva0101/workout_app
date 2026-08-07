@@ -8,7 +8,9 @@ CREATE TABLE workoutapp.program (
 
 CREATE TABLE workoutapp.training_days (
     id SERIAL PRIMARY KEY,
-    program_id INT NOT NULL REFERENCES workoutapp.program(id),
+    program_id 
+        INT NOT NULL REFERENCES workoutapp.program(id)
+        ON DELETE CASCADE,
     day_number INT NOT NULL CHECK(day_number BETWEEN 1 AND 100),
     UNIQUE (program_id, day_number)
 );
@@ -22,7 +24,9 @@ CREATE TABLE workoutapp.exercise (
 
 CREATE TABLE workoutapp.training_day_exercises (
     id SERIAL PRIMARY KEY,
-    training_day_id INT NOT NULL REFERENCES workoutapp.training_days(id),
+    training_day_id 
+        INT NOT NULL REFERENCES workoutapp.training_days(id)
+        ON DELETE CASCADE,
     exercise_id INT NOT NULL REFERENCES workoutapp.exercise(id),
     sets INT NOT NULL CHECK(sets BETWEEN 1 AND 100)
 );
