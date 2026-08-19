@@ -14,6 +14,9 @@ import (
 	program_repository_postgres "workout_app/internal/features/program/repository/postgres"
 	program_service "workout_app/internal/features/program/service"
 	program_transport_http "workout_app/internal/features/program/transport/http"
+	workout_repository_postgres "workout_app/internal/features/workout/repository/postgres"
+	workout_service "workout_app/internal/features/workout/service"
+	workout_transport_http "workout_app/internal/features/workout/transport/http"
 )
 
 func main() {
@@ -52,10 +55,15 @@ func main() {
 	programService := program_service.NewProgramService(programRepository)
 	programTransportHTTP := program_transport_http.NewProgramHTTPHandler(programService)
 
-	routes := append(
-		authorizationTransportHTTP.Routes(),
-		programTransportHTTP.Routes()...,
-	)
+	workoutRepository := workout_repository_postgres.NewWorkoutRepository(pool)
+	workoutService := workout_service.NewWorkoutService(workoutRepository)
+	workoutTransportHTTP := workout_transport_http.NewWorkoutHTTPHandler(workoutService)
+
+	routes := []core_http_server.Route{}
+	routes = append(routes, authorizationTransportHTTP.Routes()...)
+	routes = append(routes, programTransportHTTP.Routes()...)
+	routes = append(routes, workoutTransportHTTP.Routes()...)
+
 	router := core_http_server.NewRouter()
 	router.RegisterRoutes(
 		authMiddleware.Middleware,

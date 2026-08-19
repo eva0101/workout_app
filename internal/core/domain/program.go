@@ -40,3 +40,9 @@ type Exercise struct {
 type NewProgramName struct {
 	Name string
 }
+
+type StartWorkout struct {
+	TrainingDayID int
+	Status        string
+	BeginAt       time.Time
+}

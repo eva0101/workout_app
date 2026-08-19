@@ -1,5 +1,6 @@
 CREATE TABLE workoutapp.workout (
     id SERIAL PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES workoutapp.users(id),
     training_day_id INT NOT NULL REFERENCES workoutapp.training_days(id),
 
     status VARCHAR(20) NOT NULL DEFAULT 'planned'
@@ -16,6 +17,10 @@ CREATE TABLE workoutapp.workout (
         OR completed_at >= begin_at
     )
 );
+
+CREATE UNIQUE INDEX one_active_workout_per_user
+ON workoutapp.workout (user_id)
+WHERE status = 'in_progress';
 
 CREATE TABLE workoutapp.workout_exercise (
     id SERIAL PRIMARY KEY,
