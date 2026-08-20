@@ -19,6 +19,14 @@ type WorkoutService interface {
 		userID uuid.UUID,
 		dayID int,
 	) (core_domain.StartWorkout, error)
+
+	ExecuteSet(
+		ctx context.Context,
+		userID uuid.UUID,
+		trainingDayExerciseID int,
+		repsDone *int,
+		weight *float64,
+	) (core_domain.WorkoutSet, error)
 }
 
 func NewWorkoutHTTPHandler(
@@ -35,6 +43,12 @@ func (h *WorkoutHTTPHandler) Routes() []core_http_server.Route {
 			Method:  http.MethodPost,
 			Path:    "/days/{id}/workouts",
 			Handler: http.HandlerFunc(h.StartTraining),
+			Auth:    true,
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/workouts/exercises/{id}/sets",
+			Handler: http.HandlerFunc(h.ExecuteSet),
 			Auth:    true,
 		},
 	}

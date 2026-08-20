@@ -20,4 +20,5 @@ var (
 	ErrExerciseNotFound    = errors.New("exercise not found")
 
 	ErrWorkoutAlreadyInProgress = errors.New("there is already a running workout")
+	ErrActiveWorkoutNotFound    = errors.New("there is no active training at the moment")
 )

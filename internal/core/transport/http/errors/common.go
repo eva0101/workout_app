@@ -41,6 +41,9 @@ func WriteError(rw http.ResponseWriter, err error) {
 	case errors.Is(err, core_errors.ErrWorkoutAlreadyInProgress):
 		http.Error(rw, err.Error(), http.StatusConflict)
 
+	case errors.Is(err, core_errors.ErrActiveWorkoutNotFound):
+		http.Error(rw, err.Error(), http.StatusNotFound)
+
 	default:
 		http.Error(rw, "internal error", http.StatusInternalServerError)
 	}

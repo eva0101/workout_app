@@ -46,3 +46,10 @@ type StartWorkout struct {
 	Status        string
 	BeginAt       time.Time
 }
+
+type WorkoutSet struct {
+	TrainingDayExercisesID int
+	SetNumber              int
+	RepsDone               int
+	Weight                 int
+}
