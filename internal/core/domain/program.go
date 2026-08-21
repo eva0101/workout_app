@@ -40,3 +40,33 @@ type Exercise struct {
 type NewProgramName struct {
 	Name string
 }
+
+type StartWorkout struct {
+	ID            int
+	TrainingDayID int
+	Status        string
+	BeginAt       time.Time
+}
+
+type WorkoutSet struct {
+	TrainingDayExercisesID int
+	SetNumber              int
+	RepsDone               *int
+	Weight                 *float64
+}
+
+type Workout struct {
+	TrainingDayID int
+	Status        string
+	FatigueScore  int
+	TotalTime     time.Duration
+}
+
+type Statistic struct {
+	ExerciseID     int
+	TotalSets      int
+	TotalRepeats   int
+	MaximumRepeats int
+	TotalVolume    float64
+	MaximumWeight  float64
+}

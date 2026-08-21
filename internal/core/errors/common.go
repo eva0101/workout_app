@@ -15,7 +15,14 @@ var (
 
 	ErrInvalidProgramName = errors.New("program name have between 3 and 100 symbols")
 
-	ErrProgramNotFound     = errors.New("program not found")
-	ErrTrainingDayNotFound = errors.New("training day not found")
-	ErrExerciseNotFound    = errors.New("exercise not found")
+	ErrProgramNotFound             = errors.New("program not found")
+	ErrTrainingDayNotFound         = errors.New("training day not found")
+	ErrExerciseNotFound            = errors.New("exercise not found")
+	ErrTrainingDayAlreadyCompleted = errors.New("this training day was already completed")
+
+	ErrWorkoutAlreadyInProgress = errors.New("there is already a running workout")
+	ErrActiveWorkoutNotFound    = errors.New("there is no active training at the moment")
+	ErrWorkoutNotFound          = errors.New("there is no training with such ID.")
+
+	ErrFatigueScoreNotCorrect = errors.New("fatigue score must be in the range from 0 to 10")
 )

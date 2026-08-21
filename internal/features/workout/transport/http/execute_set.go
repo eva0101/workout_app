@@ -1,0 +1,58 @@
+package workout_transport_http
+
+import (
+	"encoding/json"
+	"net/http"
+	core_middleware "workout_app/internal/core/middleware"
+	core_http_errors "workout_app/internal/core/transport/http/errors"
+	core_http_request "workout_app/internal/core/transport/http/request"
+
+	"github.com/google/uuid"
+)
+
+func (h *WorkoutHTTPHandler) ExecuteSet(rw http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value(core_middleware.UserIDKey).(uuid.UUID)
+	if !ok {
+		http.Error(rw, "unauthorized", http.StatusUnauthorized)
+
+		return
+	}
+
+	var req DTOExecuteSetRequest
+
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+
+	if err := decoder.Decode(&req); err != nil {
+		http.Error(rw, "invalid json", http.StatusBadRequest)
+		return
+	}
+
+	trainingDayExerciseID, err := core_http_request.GetIntPathValue(r, "id")
+	if err != nil {
+		http.Error(rw, "failed to get trainingDayExerciseID path value", http.StatusBadRequest)
+
+		return
+	}
+
+	workoutSet, err := h.workoutService.ExecuteSet(
+		r.Context(),
+		userID,
+		trainingDayExerciseID,
+		req.RepsDone,
+		req.Weight,
+	)
+	if err != nil {
+		core_http_errors.WriteError(rw, err)
+
+		return
+	}
+
+	rw.Header().Set("Content-Type", "application/json")
+	rw.WriteHeader(http.StatusCreated)
+
+	if err := json.NewEncoder(rw).Encode(workoutSet); err != nil {
+
+		return
+	}
+}
