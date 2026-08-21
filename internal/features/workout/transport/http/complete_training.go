@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (h *WorkoutHTTPHandler) ExecuteSet(rw http.ResponseWriter, r *http.Request) {
+func (h *WorkoutHTTPHandler) CompleteTraining(rw http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(core_middleware.UserIDKey).(uuid.UUID)
 	if !ok {
 		http.Error(rw, "unauthorized", http.StatusUnauthorized)
@@ -18,7 +18,7 @@ func (h *WorkoutHTTPHandler) ExecuteSet(rw http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	var req DTOExecuteSetRequest
+	var req DTOFatigueScoreRequest
 
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
@@ -28,19 +28,18 @@ func (h *WorkoutHTTPHandler) ExecuteSet(rw http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	trainingDayExerciseID, err := core_http_request.GetIntPathValue(r, "id")
+	workoutID, err := core_http_request.GetIntPathValue(r, "id")
 	if err != nil {
-		http.Error(rw, "failed to get trainingDayExerciseID path value", http.StatusBadRequest)
+		http.Error(rw, "failed to get workoutID path value", http.StatusBadRequest)
 
 		return
 	}
 
-	workoutSet, err := h.workoutService.ExecuteSet(
+	workout, err := h.workoutService.CompleteTraining(
 		r.Context(),
 		userID,
-		trainingDayExerciseID,
-		req.RepsDone,
-		req.Weight,
+		workoutID,
+		req.FatigueScore,
 	)
 	if err != nil {
 		core_http_errors.WriteError(rw, err)
@@ -48,10 +47,17 @@ func (h *WorkoutHTTPHandler) ExecuteSet(rw http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	response := DTOCompleteWorkoutResponse{
+		TrainingDayID: workout.TrainingDayID,
+		Status:        workout.Status,
+		FatigueScore:  workout.FatigueScore,
+		TotalTime:     workout.TotalTime.String(),
+	}
+
 	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusCreated)
 
-	if err := json.NewEncoder(rw).Encode(workoutSet); err != nil {
+	if err := json.NewEncoder(rw).Encode(response); err != nil {
 
 		return
 	}

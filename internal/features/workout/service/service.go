@@ -25,6 +25,18 @@ type WorkoutRepository interface {
 		repsDone *int,
 		weight *float64,
 	) (core_domain.WorkoutSet, error)
+
+	CompleteTraining(
+		ctx context.Context,
+		userID uuid.UUID,
+		workoutID int,
+		fatigueScore int,
+	) (core_domain.Workout, error)
+
+	GetStatistic(
+		ctx context.Context,
+		userID uuid.UUID,
+	) ([]core_domain.Statistic, error)
 }
 
 func NewWorkoutService(

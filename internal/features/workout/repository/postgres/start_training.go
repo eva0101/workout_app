@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 func (r *WorkoutRepository) StartTraining(
@@ -88,6 +89,7 @@ func (r *WorkoutRepository) StartTraining(
 	)
 	VALUES ($1, $2, 'in_progress', NOW())
 	RETURNING
+		id,
 		training_day_id,
 		status,
 		begin_at
@@ -98,11 +100,19 @@ func (r *WorkoutRepository) StartTraining(
 		userID,
 		dayID,
 	).Scan(
+		&workout.ID,
 		&workout.TrainingDayID,
 		&workout.Status,
 		&workout.BeginAt,
 	)
 	if err != nil {
+		var pgErr *pgconn.PgError
+
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			if pgErr.ConstraintName == "unique_training_day" {
+				return core_domain.StartWorkout{}, core_errors.ErrTrainingDayAlreadyCompleted
+			}
+		}
 
 		return core_domain.StartWorkout{}, err
 	}

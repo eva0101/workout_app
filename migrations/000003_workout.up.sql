@@ -8,8 +8,11 @@ CREATE TABLE workoutapp.workout (
 
     fatigue_score INT CHECK(fatigue_score BETWEEN 1 AND 10),
 
-    begin_at TIMESTAMPTZ,
+    begin_at TIMESTAMPTZ NOT NULL,
     completed_at TIMESTAMPTZ,
+    total_time INTERVAL,
+
+    CONSTRAINT unique_training_day UNIQUE (training_day_id),
 
     CHECK (
         completed_at IS NULL
