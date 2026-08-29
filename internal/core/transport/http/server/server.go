@@ -8,16 +8,23 @@ import (
 )
 
 type HTTPServer struct {
-	mux    *http.ServeMux
+	mux    http.Handler
 	config Config
 }
 
 func NewHTTPServer(
 	config Config,
 	mux *http.ServeMux,
+	middlewares ...func(http.Handler) http.Handler,
 ) *HTTPServer {
+	handler := http.Handler(mux)
+
+	for i := len(middlewares) - 1; i >= 0; i-- {
+		handler = middlewares[i](handler)
+	}
+
 	return &HTTPServer{
-		mux:    mux,
+		mux:    handler,
 		config: config,
 	}
 }
