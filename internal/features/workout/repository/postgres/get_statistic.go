@@ -5,6 +5,7 @@ import (
 	core_domain "workout_app/internal/core/domain"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 func (r *WorkoutRepository) GetStatistic(
@@ -28,6 +29,11 @@ func (r *WorkoutRepository) GetStatistic(
 
 	rows, err := r.pool.Query(ctx, query, userID)
 	if err != nil {
+		r.log.Error(
+			"failed to get statistic",
+			zap.Error(err),
+		)
+
 		return nil, err
 	}
 	defer rows.Close()
@@ -51,6 +57,11 @@ func (r *WorkoutRepository) GetStatistic(
 	}
 
 	if err := rows.Err(); err != nil {
+		r.log.Error(
+			"failed to append statistic",
+			zap.Error(err),
+		)
+
 		return nil, err
 	}
 

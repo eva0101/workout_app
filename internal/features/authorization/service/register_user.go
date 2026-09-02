@@ -7,6 +7,7 @@ import (
 	core_domain "workout_app/internal/core/domain"
 	core_errors "workout_app/internal/core/errors"
 
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -39,6 +40,11 @@ func (s *AuthorizationService) RegisterUser(
 		bcrypt.DefaultCost,
 	)
 	if err != nil {
+		s.log.Error(
+			"failed to hash user password",
+			zap.Error(err),
+		)
+
 		return core_domain.User{}, err
 	}
 
@@ -50,6 +56,12 @@ func (s *AuthorizationService) RegisterUser(
 	if err != nil {
 		return core_domain.User{}, err
 	}
+
+	s.log.Info(
+		"user registered",
+		zap.String("user_id", user.ID.String()),
+		zap.String("login", user.Login),
+	)
 
 	return user, nil
 }

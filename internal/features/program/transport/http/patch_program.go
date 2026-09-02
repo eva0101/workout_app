@@ -9,6 +9,7 @@ import (
 	core_http_request "workout_app/internal/core/transport/http/request"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 func (h *ProgramHTTPHandler) PatchProgram(rw http.ResponseWriter, r *http.Request) {
@@ -56,6 +57,11 @@ func (h *ProgramHTTPHandler) PatchProgram(rw http.ResponseWriter, r *http.Reques
 	rw.WriteHeader(http.StatusOK)
 
 	if err := json.NewEncoder(rw).Encode(newNameProgram); err != nil {
+		h.log.Error(
+			"failed to encode new name program",
+			zap.Error(err),
+		)
+
 		return
 	}
 }

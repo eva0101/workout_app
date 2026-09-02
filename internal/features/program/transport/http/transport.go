@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	core_domain "workout_app/internal/core/domain"
+	core_logger "workout_app/internal/core/logger"
 	core_http_server "workout_app/internal/core/transport/http/server"
 
 	"github.com/google/uuid"
@@ -11,6 +12,7 @@ import (
 
 type ProgramHTTPHandler struct {
 	programService ProgramService
+	log            *core_logger.Logger
 }
 
 type ProgramService interface {
@@ -79,9 +81,11 @@ type ProgramService interface {
 
 func NewProgramHTTPHandler(
 	programService ProgramService,
+	log *core_logger.Logger,
 ) *ProgramHTTPHandler {
 	return &ProgramHTTPHandler{
 		programService: programService,
+		log:            log,
 	}
 }
 

@@ -5,6 +5,7 @@ import (
 	core_domain "workout_app/internal/core/domain"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 func (r *ProgramRepository) CreateProgram(
@@ -34,6 +35,11 @@ func (r *ProgramRepository) CreateProgram(
 		&program.StartedAt,
 	)
 	if err != nil {
+		r.log.Error(
+			"failed to create program",
+			zap.Error(err),
+		)
+
 		return core_domain.Program{}, err
 	}
 

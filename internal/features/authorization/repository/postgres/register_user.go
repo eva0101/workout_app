@@ -6,6 +6,7 @@ import (
 	core_errors "workout_app/internal/core/errors"
 
 	"github.com/jackc/pgx/v5/pgconn"
+	"go.uber.org/zap"
 )
 
 func (r *AuthorizationRepository) RegisterUser(
@@ -37,6 +38,11 @@ func (r *AuthorizationRepository) RegisterUser(
 		if pgErr, ok := err.(*pgconn.PgError); ok && pgErr.Code == "23505" {
 			return core_domain.User{}, core_errors.ErrLoginExists
 		}
+
+		r.log.Error(
+			"failed to register user in database",
+			zap.Error(err),
+		)
 
 		return core_domain.User{}, err
 	}

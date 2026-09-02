@@ -7,6 +7,7 @@ import (
 	core_http_errors "workout_app/internal/core/transport/http/errors"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 func (h *ProgramHTTPHandler) GetPrograms(rw http.ResponseWriter, r *http.Request) {
@@ -28,6 +29,11 @@ func (h *ProgramHTTPHandler) GetPrograms(rw http.ResponseWriter, r *http.Request
 	response := ToProgramResponse(programs)
 
 	if err := json.NewEncoder(rw).Encode(response); err != nil {
+		h.log.Error(
+			"failed to encode programs response",
+			zap.Error(err),
+		)
+
 		return
 	}
 }

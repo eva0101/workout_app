@@ -7,6 +7,7 @@ import (
 	core_errors "workout_app/internal/core/errors"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 func (s *ProgramService) PatchProgram(
@@ -26,6 +27,10 @@ func (s *ProgramService) PatchProgram(
 		name,
 	)
 	if err != nil {
+		s.log.Info(
+			"created new name for program",
+			zap.String("new name", newNameProgram.Name),
+		)
 
 		return core_domain.NewProgramName{}, err
 	}

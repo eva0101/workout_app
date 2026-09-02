@@ -21,5 +21,9 @@ func (s *ProgramService) CreateTrainingDay(
 		return core_domain.TrainingDays{}, err
 	}
 
+	s.log.Info(
+		"training day created",
+	)
+
 	return trainingDay, nil
 }

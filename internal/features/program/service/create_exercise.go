@@ -5,6 +5,7 @@ import (
 	core_domain "workout_app/internal/core/domain"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 func (s *ProgramService) CreateExercise(
@@ -24,6 +25,11 @@ func (s *ProgramService) CreateExercise(
 	if err != nil {
 		return core_domain.Exercise{}, err
 	}
+
+	s.log.Info(
+		"exercise created",
+		zap.String("exercise", exercise.NameExercise),
+	)
 
 	return exercise, nil
 }

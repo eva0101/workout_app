@@ -19,7 +19,7 @@ func (h *ProgramHTTPHandler) DeleteExercise(rw http.ResponseWriter, r *http.Requ
 
 	trainingDayExerciseID, err := core_http_request.GetIntPathValue(r, "id")
 	if err != nil {
-		http.Error(rw, "failed to get traingDayExerciseID path value", http.StatusBadRequest)
+		http.Error(rw, "failed to get trainingDayExerciseID path value", http.StatusBadRequest)
 
 		return
 	}

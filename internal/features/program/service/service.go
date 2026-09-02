@@ -3,12 +3,14 @@ package program_service
 import (
 	"context"
 	core_domain "workout_app/internal/core/domain"
+	core_logger "workout_app/internal/core/logger"
 
 	"github.com/google/uuid"
 )
 
 type ProgramService struct {
 	programRepository ProgramRepository
+	log               *core_logger.Logger
 }
 
 type ProgramRepository interface {
@@ -77,8 +79,10 @@ type ProgramRepository interface {
 
 func NewProgramService(
 	programRepository ProgramRepository,
+	log *core_logger.Logger,
 ) *ProgramService {
 	return &ProgramService{
 		programRepository: programRepository,
+		log:               log,
 	}
 }

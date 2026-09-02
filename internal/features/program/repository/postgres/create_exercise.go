@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"go.uber.org/zap"
 )
 
 func (r *ProgramRepository) CreateExercise(
@@ -32,6 +33,11 @@ func (r *ProgramRepository) CreateExercise(
 		return core_domain.Exercise{}, core_errors.ErrExerciseNotFound
 	}
 	if err != nil {
+		r.log.Error(
+			"failed to check exercise",
+			zap.Error(err),
+		)
+
 		return core_domain.Exercise{}, err
 	}
 
@@ -80,6 +86,11 @@ func (r *ProgramRepository) CreateExercise(
 		if errors.Is(err, pgx.ErrNoRows) {
 			return core_domain.Exercise{}, core_errors.ErrTrainingDayNotFound
 		}
+
+		r.log.Error(
+			"failed to create exercise in training day",
+			zap.Error(err),
+		)
 
 		return core_domain.Exercise{}, err
 	}

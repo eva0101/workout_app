@@ -2,8 +2,11 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"os"
 	"os/signal"
 	"syscall"
+	core_logger "workout_app/internal/core/logger"
 	core_middleware "workout_app/internal/core/middleware"
 	"workout_app/internal/core/pkg/core_pkg_jwt"
 	core_pool_pgx "workout_app/internal/core/repository/postgres/pool/pgx"
@@ -17,6 +20,8 @@ import (
 	workout_repository_postgres "workout_app/internal/features/workout/repository/postgres"
 	workout_service "workout_app/internal/features/workout/service"
 	workout_transport_http "workout_app/internal/features/workout/transport/http"
+
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -26,12 +31,21 @@ func main() {
 	)
 	defer cancel()
 
+	config := core_logger.NewConfig()
+
+	log, err := core_logger.NewLogger(config)
+	if err != nil {
+		fmt.Println("failed to init application logger:", err)
+		os.Exit(1)
+	}
+	defer log.Close()
+
 	pool, err := core_pool_pgx.NewPool(
 		ctx,
 		core_pool_pgx.NewConfigMust(),
 	)
 	if err != nil {
-		panic(err)
+		log.Fatal("failed to init postgres connection pool", zap.Error(err))
 	}
 	defer pool.Close()
 
@@ -47,17 +61,17 @@ func main() {
 
 	authMiddleware := core_middleware.NewAuthMiddleware(jwtService)
 
-	authorizationRepository := authorization_repository_postgres.NewAuthorizationRepository(pool)
-	authorizationService := authorization_service.NewAuthorizationService(authorizationRepository, jwtService)
+	authorizationRepository := authorization_repository_postgres.NewAuthorizationRepository(pool, log)
+	authorizationService := authorization_service.NewAuthorizationService(authorizationRepository, jwtService, log)
 	authorizationTransportHTTP := authorization_transport_http.NewAuthorizationHTTPHandler(authorizationService)
 
-	programRepository := program_repository_postgres.NewProgramRepository(pool)
-	programService := program_service.NewProgramService(programRepository)
-	programTransportHTTP := program_transport_http.NewProgramHTTPHandler(programService)
+	programRepository := program_repository_postgres.NewProgramRepository(pool, log)
+	programService := program_service.NewProgramService(programRepository, log)
+	programTransportHTTP := program_transport_http.NewProgramHTTPHandler(programService, log)
 
-	workoutRepository := workout_repository_postgres.NewWorkoutRepository(pool)
-	workoutService := workout_service.NewWorkoutService(workoutRepository)
-	workoutTransportHTTP := workout_transport_http.NewWorkoutHTTPHandler(workoutService)
+	workoutRepository := workout_repository_postgres.NewWorkoutRepository(pool, log)
+	workoutService := workout_service.NewWorkoutService(workoutRepository, log)
+	workoutTransportHTTP := workout_transport_http.NewWorkoutHTTPHandler(workoutService, log)
 
 	routes := []core_http_server.Route{}
 	routes = append(routes, authorizationTransportHTTP.Routes()...)
@@ -70,12 +84,14 @@ func main() {
 		routes...,
 	)
 
+	log.Debug("init HTTP server")
 	httpServer := core_http_server.NewHTTPServer(
 		core_http_server.NewConfigMust(),
 		router.ServeMux,
+		core_middleware.Logger(log),
 	)
 
 	if err := httpServer.Run(ctx); err != nil {
-		panic(err)
+		log.Error("HTTP server run error", zap.Error(err))
 	}
 }

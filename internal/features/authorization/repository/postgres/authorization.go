@@ -7,6 +7,7 @@ import (
 	core_errors "workout_app/internal/core/errors"
 
 	"github.com/jackc/pgx/v5"
+	"go.uber.org/zap"
 )
 
 func (r *AuthorizationRepository) GetPasswordHashByLogin(
@@ -31,6 +32,11 @@ func (r *AuthorizationRepository) GetPasswordHashByLogin(
 		if errors.Is(err, pgx.ErrNoRows) {
 			return core_dto.DTOUserPasswordHash{}, core_errors.ErrInvalidCredentials
 		}
+
+		r.log.Error(
+			"failed to get user password hash",
+			zap.Error(err),
+		)
 
 		return core_dto.DTOUserPasswordHash{}, err
 	}

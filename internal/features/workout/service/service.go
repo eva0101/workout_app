@@ -3,12 +3,14 @@ package workout_service
 import (
 	"context"
 	core_domain "workout_app/internal/core/domain"
+	core_logger "workout_app/internal/core/logger"
 
 	"github.com/google/uuid"
 )
 
 type WorkoutService struct {
 	workoutRepository WorkoutRepository
+	log               *core_logger.Logger
 }
 
 type WorkoutRepository interface {
@@ -41,8 +43,10 @@ type WorkoutRepository interface {
 
 func NewWorkoutService(
 	workoutRepository WorkoutRepository,
+	log *core_logger.Logger,
 ) *WorkoutService {
 	return &WorkoutService{
 		workoutRepository: workoutRepository,
+		log:               log,
 	}
 }
