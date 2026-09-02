@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"go.uber.org/zap"
 )
 
 func (r *ProgramRepository) CreateTrainingDay(
@@ -46,6 +47,11 @@ func (r *ProgramRepository) CreateTrainingDay(
 		if errors.Is(err, pgx.ErrNoRows) {
 			return core_domain.TrainingDays{}, core_errors.ErrProgramNotFound
 		}
+
+		r.log.Error(
+			"failed to create training day",
+			zap.Error(err),
+		)
 
 		return core_domain.TrainingDays{}, err
 	}

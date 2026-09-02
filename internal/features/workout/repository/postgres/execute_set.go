@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"go.uber.org/zap"
 )
 
 func (r *WorkoutRepository) ExecuteSet(
@@ -67,6 +68,11 @@ func (r *WorkoutRepository) ExecuteSet(
 
 			return core_domain.WorkoutSet{}, core_errors.ErrActiveWorkoutNotFound
 		}
+
+		r.log.Error(
+			"failed to execute set",
+			zap.Error(err),
+		)
 
 		return core_domain.WorkoutSet{}, err
 	}

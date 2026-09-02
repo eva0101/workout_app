@@ -7,6 +7,7 @@ import (
 	core_errors "workout_app/internal/core/errors"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 func (r *ProgramRepository) DeleteExercise(
@@ -34,6 +35,10 @@ func (r *ProgramRepository) DeleteExercise(
 		trainingDayExerciseID,
 	)
 	if err != nil {
+		r.log.Error(
+			"failed to delete exercise",
+			zap.Error(err),
+		)
 
 		return fmt.Errorf("exec query: %w", err)
 	}

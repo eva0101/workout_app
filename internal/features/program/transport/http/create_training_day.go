@@ -8,6 +8,7 @@ import (
 	core_http_request "workout_app/internal/core/transport/http/request"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 func (h *ProgramHTTPHandler) CreateTrainingDay(rw http.ResponseWriter, r *http.Request) {
@@ -37,6 +38,11 @@ func (h *ProgramHTTPHandler) CreateTrainingDay(rw http.ResponseWriter, r *http.R
 	rw.WriteHeader(http.StatusCreated)
 
 	if err := json.NewEncoder(rw).Encode(trainingDay); err != nil {
+		h.log.Error(
+			"failed to encode training day",
+			zap.Error(err),
+		)
+
 		return
 	}
 }

@@ -5,6 +5,7 @@ import (
 	core_domain "workout_app/internal/core/domain"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 func (r *ProgramRepository) PatchProgram(
@@ -34,6 +35,10 @@ func (r *ProgramRepository) PatchProgram(
 		&newProgramName.Name,
 	)
 	if err != nil {
+		r.log.Error(
+			"failed to update program",
+			zap.Error(err),
+		)
 
 		return core_domain.NewProgramName{}, err
 	}

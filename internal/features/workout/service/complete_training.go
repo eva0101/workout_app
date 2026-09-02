@@ -6,6 +6,7 @@ import (
 	core_errors "workout_app/internal/core/errors"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 func (s *WorkoutService) CompleteTraining(
@@ -29,6 +30,12 @@ func (s *WorkoutService) CompleteTraining(
 
 		return core_domain.Workout{}, err
 	}
+
+	s.log.Info(
+		"training completed",
+		zap.Int("training_day_id", workout.TrainingDayID),
+		zap.String("status", workout.Status),
+	)
 
 	return workout, nil
 }

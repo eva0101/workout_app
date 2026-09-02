@@ -8,6 +8,7 @@ import (
 	core_errors "workout_app/internal/core/errors"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 func (r *ProgramRepository) GetProgram(
@@ -47,6 +48,11 @@ func (r *ProgramRepository) GetProgram(
 		id,
 	)
 	if err != nil {
+		r.log.Error(
+			"failed to select training days",
+			zap.Error(err),
+		)
+
 		return core_domain.Program{}, nil, fmt.Errorf("select training days: %w", err)
 	}
 	defer rows.Close()
@@ -60,12 +66,22 @@ func (r *ProgramRepository) GetProgram(
 			&trainingDay.DayNumber,
 		)
 		if err != nil {
+			r.log.Error(
+				"failed to scan training day",
+				zap.Error(err),
+			)
+
 			return core_domain.Program{}, nil, fmt.Errorf("scan training day: %w", err)
 		}
 
 		trainingDays = append(trainingDays, trainingDay)
 	}
 	if err := rows.Err(); err != nil {
+		r.log.Error(
+			"failed to iterate training day rows",
+			zap.Error(err),
+		)
+
 		return core_domain.Program{}, nil, fmt.Errorf("next rows: %w", err)
 	}
 

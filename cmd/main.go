@@ -65,13 +65,13 @@ func main() {
 	authorizationService := authorization_service.NewAuthorizationService(authorizationRepository, jwtService, log)
 	authorizationTransportHTTP := authorization_transport_http.NewAuthorizationHTTPHandler(authorizationService)
 
-	programRepository := program_repository_postgres.NewProgramRepository(pool)
-	programService := program_service.NewProgramService(programRepository)
-	programTransportHTTP := program_transport_http.NewProgramHTTPHandler(programService)
+	programRepository := program_repository_postgres.NewProgramRepository(pool, log)
+	programService := program_service.NewProgramService(programRepository, log)
+	programTransportHTTP := program_transport_http.NewProgramHTTPHandler(programService, log)
 
-	workoutRepository := workout_repository_postgres.NewWorkoutRepository(pool)
-	workoutService := workout_service.NewWorkoutService(workoutRepository)
-	workoutTransportHTTP := workout_transport_http.NewWorkoutHTTPHandler(workoutService)
+	workoutRepository := workout_repository_postgres.NewWorkoutRepository(pool, log)
+	workoutService := workout_service.NewWorkoutService(workoutRepository, log)
+	workoutTransportHTTP := workout_transport_http.NewWorkoutHTTPHandler(workoutService, log)
 
 	routes := []core_http_server.Route{}
 	routes = append(routes, authorizationTransportHTTP.Routes()...)

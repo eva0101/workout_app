@@ -5,6 +5,7 @@ import (
 	core_dto "workout_app/internal/core/dto"
 	core_errors "workout_app/internal/core/errors"
 
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -28,6 +29,11 @@ func (s *AuthorizationService) AuthorizationUser(
 
 	token, err := s.jwtService.GenerateToken(user.ID)
 	if err != nil {
+		s.log.Error(
+			"failed to generate JWT token",
+			zap.Error(err),
+		)
+
 		return core_dto.DTOToken{}, err
 	}
 

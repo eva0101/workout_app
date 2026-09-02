@@ -8,6 +8,7 @@ import (
 	core_http_request "workout_app/internal/core/transport/http/request"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 func (h *WorkoutHTTPHandler) StartTraining(rw http.ResponseWriter, r *http.Request) {
@@ -40,6 +41,10 @@ func (h *WorkoutHTTPHandler) StartTraining(rw http.ResponseWriter, r *http.Reque
 	rw.WriteHeader(http.StatusCreated)
 
 	if err := json.NewEncoder(rw).Encode(startTraining); err != nil {
+		h.log.Error(
+			"failed to encode start training",
+			zap.Error(err),
+		)
 
 		return
 	}

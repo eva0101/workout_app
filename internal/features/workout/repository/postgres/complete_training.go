@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"go.uber.org/zap"
 )
 
 func (r *WorkoutRepository) CompleteTraining(
@@ -18,6 +19,10 @@ func (r *WorkoutRepository) CompleteTraining(
 ) (core_domain.Workout, error) {
 	tx, err := r.pool.Begin(ctx)
 	if err != nil {
+		r.log.Error(
+			"failed to begin completed training transaction",
+			zap.Error(err),
+		)
 
 		return core_domain.Workout{}, err
 	}
@@ -59,6 +64,11 @@ func (r *WorkoutRepository) CompleteTraining(
 
 			return core_domain.Workout{}, core_errors.ErrWorkoutNotFound
 		}
+
+		r.log.Error(
+			"failed to complete training",
+			zap.Error(err),
+		)
 
 		return core_domain.Workout{}, err
 	}
@@ -118,10 +128,18 @@ func (r *WorkoutRepository) CompleteTraining(
 		workoutID,
 	)
 	if err != nil {
+		r.log.Error(
+			"failed to update training statistics",
+			zap.Error(err),
+		)
 
 		return core_domain.Workout{}, err
 	}
 	if err = tx.Commit(ctx); err != nil {
+		r.log.Error(
+			"failed to commit complete training transaction",
+			zap.Error(err),
+		)
 
 		return core_domain.Workout{}, err
 	}

@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"go.uber.org/zap"
 )
 
 func (r *WorkoutRepository) StartTraining(
@@ -18,6 +19,10 @@ func (r *WorkoutRepository) StartTraining(
 ) (core_domain.StartWorkout, error) {
 	tx, err := r.pool.Begin(ctx)
 	if err != nil {
+		r.log.Error(
+			"failed to begin start taining transaction",
+			zap.Error(err),
+		)
 
 		return core_domain.StartWorkout{}, err
 	}
@@ -51,6 +56,11 @@ func (r *WorkoutRepository) StartTraining(
 			return core_domain.StartWorkout{}, core_errors.ErrTrainingDayNotFound
 		}
 
+		r.log.Error(
+			"failed to get training day for training",
+			zap.Error(err),
+		)
+
 		return core_domain.StartWorkout{}, err
 	}
 
@@ -70,6 +80,10 @@ func (r *WorkoutRepository) StartTraining(
 		userID,
 	).Scan(&activeWorkoutExists)
 	if err != nil {
+		r.log.Error(
+			"failed to check active workout",
+			zap.Error(err),
+		)
 
 		return core_domain.StartWorkout{}, err
 	}
@@ -114,6 +128,11 @@ func (r *WorkoutRepository) StartTraining(
 			}
 		}
 
+		r.log.Error(
+			"failed to create workout",
+			zap.Error(err),
+		)
+
 		return core_domain.StartWorkout{}, err
 	}
 
@@ -130,12 +149,20 @@ func (r *WorkoutRepository) StartTraining(
 			programID,
 		)
 		if err != nil {
+			r.log.Error(
+				"failed to update program started_at",
+				zap.Error(err),
+			)
 
 			return core_domain.StartWorkout{}, err
 		}
 	}
 
 	if err = tx.Commit(ctx); err != nil {
+		r.log.Error(
+			"failed to commit start training transaction",
+			zap.Error(err),
+		)
 
 		return core_domain.StartWorkout{}, err
 	}

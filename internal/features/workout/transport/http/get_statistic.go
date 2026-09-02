@@ -7,6 +7,7 @@ import (
 	core_http_errors "workout_app/internal/core/transport/http/errors"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 func (h *WorkoutHTTPHandler) GetStatistic(rw http.ResponseWriter, r *http.Request) {
@@ -26,6 +27,11 @@ func (h *WorkoutHTTPHandler) GetStatistic(rw http.ResponseWriter, r *http.Reques
 	}
 
 	if err := json.NewEncoder(rw).Encode(statistic); err != nil {
+		h.log.Error(
+			"failed to encode statistic",
+			zap.Error(err),
+		)
+
 		return
 	}
 }
