@@ -6,7 +6,7 @@ CREATE TABLE workoutapp.workout (
     status VARCHAR(20) NOT NULL DEFAULT 'planned'
         CHECK(status IN ('planned', 'in_progress', 'completed')),
 
-    fatigue_score INT CHECK(fatigue_score BETWEEN 1 AND 10),
+    fatigue_score INT CHECK(fatigue_score BETWEEN 0 AND 10),
 
     begin_at TIMESTAMPTZ NOT NULL,
     completed_at TIMESTAMPTZ,

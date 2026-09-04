@@ -18,42 +18,74 @@ func (r *WorkoutRepository) ExecuteSet(
 	repsDone *int,
 	weight *float64,
 ) (core_domain.WorkoutSet, error) {
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return core_domain.WorkoutSet{}, err
+	}
+	defer tx.Rollback(ctx)
+
+	var workoutID int
+
+	lockWorkoutQuery := `
+		SELECT id
+		FROM workoutapp.workout
+		WHERE user_id = $1
+			AND status = 'in_progress'
+		FOR UPDATE;
+	`
+
+	err = tx.QueryRow(
+		ctx,
+		lockWorkoutQuery,
+		userID,
+	).Scan(&workoutID)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return core_domain.WorkoutSet{}, core_errors.ErrActiveWorkoutNotFound
+		}
+
+		r.log.Error(
+			"failed to lock workout",
+			zap.Error(err),
+		)
+
+		return core_domain.WorkoutSet{}, err
+	}
+
 	var workoutSet core_domain.WorkoutSet
 
 	query := `
-	INSERT INTO workoutapp.workout_set (
-		workout_id,
-		training_day_exercises_id,
-		set_number,
-		reps_done,
-		weight
-	)
-	SELECT
-		w.id,
-		tde.id,
-		COALESCE(MAX(ws.set_number), 0) + 1,
-		$3,
-		$4
-	FROM workoutapp.workout w
-	JOIN workoutapp.training_day_exercises tde 
-		ON tde.training_day_id = w.training_day_id
-	LEFT JOIN workoutapp.workout_set ws
-		ON ws.workout_id = w.id
-		AND ws.training_day_exercises_id = tde.id
-	WHERE w.user_id = $1
-		AND w.status = 'in_progress'
-		AND tde.id = $2
-	GROUP BY w.id, tde.id
-	RETURNING
-		training_day_exercises_id,
-		set_number,
-		reps_done,
-		weight;
+		INSERT INTO workoutapp.workout_set (
+			workout_id,
+			training_day_exercises_id,
+			set_number,
+			reps_done,
+			weight
+		)
+		SELECT
+			$1,
+			tde.id,
+			COALESCE(MAX(ws.set_number), 0) + 1,
+			$3,
+			$4
+		FROM workoutapp.training_day_exercises tde
+		LEFT JOIN workoutapp.workout_set ws
+			ON ws.workout_id = $1
+			AND ws.training_day_exercises_id = tde.id
+		WHERE tde.id = $2
+		GROUP BY tde.id
+		RETURNING
+			training_day_exercises_id,
+			set_number,
+			reps_done,
+			weight;
 	`
-	err := r.pool.QueryRow(
+
+	err = tx.QueryRow(
 		ctx,
 		query,
-		userID,
+		workoutID,
 		trainingDayExerciseID,
 		repsDone,
 		weight,
@@ -63,14 +95,23 @@ func (r *WorkoutRepository) ExecuteSet(
 		&workoutSet.RepsDone,
 		&workoutSet.Weight,
 	)
+
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-
 			return core_domain.WorkoutSet{}, core_errors.ErrActiveWorkoutNotFound
 		}
 
 		r.log.Error(
 			"failed to execute set",
+			zap.Error(err),
+		)
+
+		return core_domain.WorkoutSet{}, err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		r.log.Error(
+			"failed to commit execute set transaction",
 			zap.Error(err),
 		)
 

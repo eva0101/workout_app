@@ -27,13 +27,13 @@ func (s *ProgramService) PatchProgram(
 		name,
 	)
 	if err != nil {
-		s.log.Info(
-			"created new name for program",
-			zap.String("new name", newNameProgram.Name),
-		)
-
 		return core_domain.NewProgramName{}, err
 	}
+
+	s.log.Info(
+		"created new name for program",
+		zap.String("new name", newNameProgram.Name),
+	)
 
 	return newNameProgram, nil
 }

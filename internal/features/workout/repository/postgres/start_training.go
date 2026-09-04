@@ -126,6 +126,9 @@ func (r *WorkoutRepository) StartTraining(
 			if pgErr.ConstraintName == "unique_training_day" {
 				return core_domain.StartWorkout{}, core_errors.ErrTrainingDayAlreadyCompleted
 			}
+			if pgErr.ColumnName == "one_active_workout_per_user" {
+				return core_domain.StartWorkout{}, core_errors.ErrWorkoutAlreadyInProgress
+			}
 		}
 
 		r.log.Error(

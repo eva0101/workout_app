@@ -2,9 +2,12 @@ package program_repository_postgres
 
 import (
 	"context"
+	"errors"
 	core_domain "workout_app/internal/core/domain"
+	core_errors "workout_app/internal/core/errors"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 )
 
@@ -35,6 +38,10 @@ func (r *ProgramRepository) PatchProgram(
 		&newProgramName.Name,
 	)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return core_domain.NewProgramName{}, core_errors.ErrProgramNotFound
+		}
+
 		r.log.Error(
 			"failed to update program",
 			zap.Error(err),
