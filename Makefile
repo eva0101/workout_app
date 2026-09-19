@@ -52,3 +52,7 @@ app-run:
 	@export POSTGRES_HOST=localhost && \
 	go mod tidy && \
 	go run ${PROJECT_ROOT}/cmd/main.go
+
+
+app-deploy:
+	@docker compose up -d --build workoutapp
