@@ -1,4 +1,28 @@
 services:
+  workoutapp:
+    build:
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/cmd/Dockerfile
+    container_name: workoutapp
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - HTTP_ADDR=:5050
+      - HTTP_SHUTDOWN_TIMEOUT=${HTTP_SHUTDOWN_TIMEOUT}
+      - POSTGRES_HOST=workoutapp-postgres
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_TIMEOUT=${POSTGRES_TIMEOUT}
+      - UID=${UID}
+      - GID=${GID}
+      - LOG_LEVEL=${LOG_LEVEL}
+      - LOG_FOLDER=/app/out/logger
+    volumes:
+      - ${PROJECT_ROOT}/out/logger:/app/out/logger
+    ports:
+      - "5050:5050"
+    restart: always
+
   workoutapp-postgres:
     image: postgres:18.4-bookworm
     container_name: workoutapp-env-postgres
@@ -10,8 +34,8 @@ services:
     volumes:
       - ${PROJECT_ROOT}/out/pgdata:/var/lib/postgresql
     ports:
-      - "127.0.0.1:5432:5432"
-    restart: unless-stopped
+      - "5432:5432"
+    restart: always
 
   workoutapp-postgres-migrate:
     image: migrate/migrate:v4.19.1
