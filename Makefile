@@ -14,7 +14,7 @@ env-cleanup:
 	@read -p "Очистить все данные DB? [y/n]: " ans; \
 	if [ "$$ans" = "y" ]; then \
 		docker compose down workoutapp-postgres && \
-		rm -rf ${PROJECT_ROOT}/out/pgdata && \
+		sudo rm -rf ${PROJECT_ROOT}/out/pgdata && \
 		echo "Файлы окружения очищены"; \
 	else \
 		echo "Отменено"; \
@@ -56,3 +56,9 @@ app-run:
 
 app-deploy:
 	@docker compose up -d --build workoutapp
+
+app-undeploy:
+	@docker compose down workoutapp
+
+ps:
+	@docker compose ps
