@@ -9,6 +9,18 @@ import (
 	"github.com/google/uuid"
 )
 
+// DeleteTrainingDay godoc
+// @Summary          Удаление тренировочного дня
+// @Description      Удаление тренировочного дня в программе по ID
+// @Tags             program
+// @Security         BearerAuth
+// @Param            id path int true "ID тренировочного дня"
+// @Success          204 "Успешное удаление тренировочного дня"
+// @Failure          400 {string} string "Bad request"
+// @Failure          401 {string} string "Unauthorized"
+// @Failure          404 {string} string "Training day not found"
+// @Failure          500 {string} string "Internal server error"
+// @Router           /days/{id} [delete]
 func (h *ProgramHTTPHandler) DeleteTrainingDay(rw http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(core_middleware.UserIDKey).(uuid.UUID)
 	if !ok {

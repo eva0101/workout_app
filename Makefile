@@ -4,7 +4,6 @@ export
 export PROJECT_ROOT=$(shell pwd)
 
 env-up:
-	@mkdir -p out/pgdata
 	@docker compose up -d workoutapp-postgres
 
 env-down:
@@ -14,7 +13,7 @@ env-cleanup:
 	@read -p "Очистить все данные DB? [y/n]: " ans; \
 	if [ "$$ans" = "y" ]; then \
 		docker compose down workoutapp-postgres && \
-		sudo rm -rf ${PROJECT_ROOT}/out/pgdata && \
+		sudo rm -rf ${PROJECT_ROOT}/../data/workout_app-pgdata && \
 		echo "Файлы окружения очищены"; \
 	else \
 		echo "Отменено"; \
@@ -59,6 +58,16 @@ app-deploy:
 
 app-undeploy:
 	@docker compose down workoutapp
+
+
+swagger-gen:
+	@docker compose run --rm swagger \
+		init \
+		-g cmd/main.go \
+		-o docs/swagger \
+		--parseInternal \
+		--parseDependency 
+
 
 ps:
 	@docker compose ps

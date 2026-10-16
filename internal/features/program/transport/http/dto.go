@@ -3,25 +3,41 @@ package program_transport_http
 import (
 	"time"
 	core_domain "workout_app/internal/core/domain"
+
+	"github.com/google/uuid"
 )
 
 type CreateProgramDTORequest struct {
-	Name string `json:"name"`
+	Name string `json:"name" example:"Программа на развитие спины"`
+}
+type NewProgramNameDTOResponse struct {
+	Name string `json:"name" example:"new name"`
+}
+type CreateProgramDTOResponse struct {
+	ID        int       `json:"id"         example:"1"`
+	UserID    uuid.UUID `json:"user_id"    example:"8f369546-3071-45b5-85b3-1bf4faae5c8a"`
+	Name      string    `json:"name"       example:"Программа на развитие спины"`
+	StartedAt time.Time `json:"started_at" example:"2026-09-23T12:52:59.667404+05:00"`
 }
 
 type ProgramDTOResponse struct {
-	ID        int       `json:"id"`
-	Name      string    `json:"name"`
-	StartedAt time.Time `json:"started_at"`
+	ID        int       `json:"id"         example:"1"`
+	Name      string    `json:"name"       example:"Программа на развитие спины"`
+	StartedAt time.Time `json:"started_at" example:"2026-09-23T13:46:32.509142+05:00"`
 }
 
 type ProgramDetailsDTOResponse struct {
-	ID           int                        `json:"id"`
-	Name         string                     `json:"name"`
+	ID           int                        `json:"id"            example:"1"`
+	Name         string                     `json:"name"          example:"Программа на развитие спины"`
 	TrainingDays []core_domain.TrainingDays `json:"training_days"`
 }
 
-type TrainingDayResponse struct {
+type CreateTrainingDayDTOResponse struct {
+	ID        int `json:"id"         example:"1"`
+	ProgramID int `json:"program_id" example:"1"`
+	DayNumber int `json:"day_number" example:"1"`
+}
+type TrainingDayDTOResponse struct {
 	ID        int                        `json:"id"`
 	DayNumber int                        `json:"day_number"`
 	Exercises []TrainingExerciseResponse `json:"exercises"`
@@ -34,8 +50,13 @@ type TrainingExerciseResponse struct {
 }
 
 type CreateExerciseDTORequest struct {
-	ExerciseID int `json:"exercise_id"`
-	Sets       int `json:"sets"`
+	ExerciseID int `json:"exercise_id" example:"3"`
+	Sets       int `json:"sets"        example:"4"`
+}
+type CreateExerciseDTOResponse struct {
+	ID           int    `json:"id"            example:"1"`
+	NameExercise string `json:"name_exercise" example:"Подтягивания на бицепс"`
+	Sets         int    `json:"sets"          example:"4"`
 }
 
 func ToProgramResponse(
@@ -54,8 +75,8 @@ func ToProgramResponse(
 	return result
 }
 
-func ToTrainingDayResponse(day core_domain.TrainingDay) TrainingDayResponse {
-	response := TrainingDayResponse{
+func ToTrainingDayResponse(day core_domain.TrainingDay) TrainingDayDTOResponse {
+	response := TrainingDayDTOResponse{
 		ID:        day.ID,
 		DayNumber: day.DayNumber,
 		Exercises: make([]TrainingExerciseResponse, 0, len(day.Exercises)),

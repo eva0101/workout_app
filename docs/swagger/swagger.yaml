@@ -1,0 +1,808 @@
+basePath: /
+definitions:
+  internal_features_program_transport_http.CreateExerciseDTORequest:
+    properties:
+      exercise_id:
+        example: 3
+        type: integer
+      sets:
+        example: 4
+        type: integer
+    type: object
+  internal_features_program_transport_http.CreateExerciseDTOResponse:
+    properties:
+      id:
+        example: 1
+        type: integer
+      name_exercise:
+        example: Подтягивания на бицепс
+        type: string
+      sets:
+        example: 4
+        type: integer
+    type: object
+  internal_features_program_transport_http.CreateProgramDTORequest:
+    properties:
+      name:
+        example: Программа на развитие спины
+        type: string
+    type: object
+  internal_features_program_transport_http.CreateProgramDTOResponse:
+    properties:
+      id:
+        example: 1
+        type: integer
+      name:
+        example: Программа на развитие спины
+        type: string
+      started_at:
+        example: "2026-09-23T12:52:59.667404+05:00"
+        type: string
+      user_id:
+        example: 8f369546-3071-45b5-85b3-1bf4faae5c8a
+        type: string
+    type: object
+  internal_features_program_transport_http.CreateTrainingDayDTOResponse:
+    properties:
+      day_number:
+        example: 1
+        type: integer
+      id:
+        example: 1
+        type: integer
+      program_id:
+        example: 1
+        type: integer
+    type: object
+  internal_features_program_transport_http.NewProgramNameDTOResponse:
+    properties:
+      name:
+        example: new name
+        type: string
+    type: object
+  internal_features_program_transport_http.ProgramDTOResponse:
+    properties:
+      id:
+        example: 1
+        type: integer
+      name:
+        example: Программа на развитие спины
+        type: string
+      started_at:
+        example: "2026-09-23T13:46:32.509142+05:00"
+        type: string
+    type: object
+  internal_features_program_transport_http.ProgramDetailsDTOResponse:
+    properties:
+      id:
+        example: 1
+        type: integer
+      name:
+        example: Программа на развитие спины
+        type: string
+      training_days:
+        items:
+          $ref: '#/definitions/workout_app_internal_core_domain.TrainingDays'
+        type: array
+    type: object
+  internal_features_program_transport_http.TrainingDayDTOResponse:
+    properties:
+      day_number:
+        type: integer
+      exercises:
+        items:
+          $ref: '#/definitions/internal_features_program_transport_http.TrainingExerciseResponse'
+        type: array
+      id:
+        type: integer
+    type: object
+  internal_features_program_transport_http.TrainingExerciseResponse:
+    properties:
+      exercise_id:
+        type: integer
+      id:
+        type: integer
+      sets:
+        type: integer
+    type: object
+  internal_features_workout_transport_http.CompleteTrainingDTORequest:
+    properties:
+      fatigue_score:
+        example: 6
+        type: integer
+    type: object
+  internal_features_workout_transport_http.CompleteTrainingDTOResponse:
+    properties:
+      fatigue_score:
+        example: 6
+        type: integer
+      status:
+        example: completed
+        type: string
+      total_time:
+        example: 1m13.573462s
+        type: string
+      training_day_id:
+        example: 1
+        type: integer
+    type: object
+  internal_features_workout_transport_http.ExecuteSetDTORequest:
+    properties:
+      reps_done:
+        example: 4
+        type: integer
+      weight:
+        example: 8
+        type: number
+    type: object
+  internal_features_workout_transport_http.ExecuteSetDTOResponse:
+    properties:
+      reps_done:
+        example: 4
+        type: integer
+      set_number:
+        example: 5
+        type: integer
+      training_day_exercises_id:
+        example: 1
+        type: integer
+      weight:
+        example: 8
+        type: number
+    type: object
+  internal_features_workout_transport_http.StartWorkoutDTOResponse:
+    properties:
+      begin_at:
+        example: "2026-10-15T14:36:25.742006+05:00"
+        type: string
+      id:
+        example: 1
+        type: integer
+      status:
+        example: in_progress
+        type: string
+      training_day_id:
+        example: 1
+        type: integer
+    type: object
+  internal_features_workout_transport_http.StatisticDTOResponse:
+    properties:
+      exercise_id:
+        example: 4
+        type: integer
+      maximum_repeats:
+        example: 4
+        type: integer
+      maximum_weight:
+        example: 8
+        type: number
+      total_repeats:
+        example: 20
+        type: integer
+      total_sets:
+        example: 5
+        type: integer
+      total_volume:
+        example: 160
+        type: number
+    type: object
+  workout_app_internal_core_domain.TrainingDays:
+    properties:
+      dayNumber:
+        type: integer
+      id:
+        type: integer
+      programID:
+        type: integer
+    type: object
+  workout_app_internal_core_dto.DTOAuthorizationUserRequest:
+    properties:
+      login:
+        example: egor
+        type: string
+      password:
+        example: "12345678"
+        type: string
+    type: object
+  workout_app_internal_core_dto.DTOAuthorizationUserResponse:
+    properties:
+      created_at:
+        example: "2026-09-23T11:12:44.513975+05:00"
+        type: string
+      id:
+        example: 8f369456-2371-45b5-85b3-1bf4faae5c8d
+        type: string
+      login:
+        example: egor
+        type: string
+    type: object
+  workout_app_internal_core_dto.DTOToken:
+    properties:
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3OTAyMzI5NzIsInVzZXJfaWQiOiI4ZjFWEJT578KTMDcxLTQ1YjUtODViMy0xYmY0ZmFhZTVjOGEifQ.faJA58348Qwr1z1G39aOgOywyxxNN1Cm4oXS5rSGSJ0
+        type: string
+    type: object
+host: 127.0.0.1:5050
+info:
+  contact: {}
+  description: Workout App REST-API scheme
+  title: Workout App API
+  version: "0.1"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Авторизация, генерация и сохранение jwt токена под текущего пользователя
+      parameters:
+      - description: AuthorizationUser тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/workout_app_internal_core_dto.DTOAuthorizationUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешно авторизованный пользователь
+          schema:
+            $ref: '#/definitions/workout_app_internal_core_dto.DTOToken'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "409":
+          description: Conflict
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Авторизация пользователя
+      tags:
+      - authorization
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Регистрация и сохранение нового пользователя в систему
+      parameters:
+      - description: RegisterUser тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/workout_app_internal_core_dto.DTOAuthorizationUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Успешно зарегистрированный пользователь
+          schema:
+            $ref: '#/definitions/workout_app_internal_core_dto.DTOAuthorizationUserResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "409":
+          description: Conflict
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Регистрация пользователя
+      tags:
+      - authorization
+  /days/{id}:
+    delete:
+      description: Удаление тренировочного дня в программе по ID
+      parameters:
+      - description: ID тренировочного дня
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: Успешное удаление тренировочного дня
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Training day not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Удаление тренировочного дня
+      tags:
+      - program
+    get:
+      description: Получение конкретного тренировочного дня по ID
+      parameters:
+      - description: ID получаймого дня
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Тренировочный день успешно найден
+          schema:
+            $ref: '#/definitions/internal_features_program_transport_http.TrainingDayDTOResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "404":
+          description: Not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Получение тренировочного дня
+      tags:
+      - program
+  /days/{id}/exercises:
+    post:
+      consumes:
+      - application/json
+      description: Создание нового упражнения в тренировочном дне
+      parameters:
+      - description: ID тренировочного дня
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: CreateExercise тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_program_transport_http.CreateExerciseDTORequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Успешно созданное упражнение
+          schema:
+            $ref: '#/definitions/internal_features_program_transport_http.CreateExerciseDTOResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Создание упражнения
+      tags:
+      - program
+  /days/{id}/workouts:
+    post:
+      consumes:
+      - application/json
+      description: Запускает начало тренировочного дня
+      parameters:
+      - description: ID тренировочного дня
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Успешно начатый тренировочный день
+          schema:
+            $ref: '#/definitions/internal_features_workout_transport_http.StartWorkoutDTOResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "409":
+          description: Conflict
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Начать тренировку
+      tags:
+      - workout
+  /days/exercises/{id}:
+    delete:
+      description: Удаление упражнения в тренировочном дне по ID
+      parameters:
+      - description: ID удаляемого упражнения
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: Успешное удаление упражнения
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Exercise not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Удаление упражнения
+      tags:
+      - program
+  /programs:
+    get:
+      description: Получение всех программ
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Программы успешно найдены
+          schema:
+            items:
+              $ref: '#/definitions/internal_features_program_transport_http.ProgramDTOResponse'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Получение программ
+      tags:
+      - program
+    post:
+      consumes:
+      - application/json
+      description: Создание тренировочной программы зарегистрировавшегося пользователя
+      parameters:
+      - description: CreateProgram тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_program_transport_http.CreateProgramDTORequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Успешно созданная программа тренировок
+          schema:
+            $ref: '#/definitions/internal_features_program_transport_http.CreateProgramDTOResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Создание тренировочной программы
+      tags:
+      - program
+  /programs/{id}:
+    delete:
+      description: Удаление программы тренировок по ID
+      parameters:
+      - description: ID программы тренировок
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: Успешное удаление программы
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Program not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Удаление программы
+      tags:
+      - program
+    get:
+      description: Получение конкретной программы по ее ID
+      parameters:
+      - description: ID получаемой программы
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Программа успешно найдена
+          schema:
+            $ref: '#/definitions/internal_features_program_transport_http.ProgramDetailsDTOResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "404":
+          description: Not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Получение программы
+      tags:
+      - program
+    patch:
+      consumes:
+      - application/json
+      description: Обновляет название уже существующей программы тренировок
+      parameters:
+      - description: ID изменяемой программы
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: PatchProgram тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_program_transport_http.CreateProgramDTORequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешно измененное название программы тренировок
+          schema:
+            $ref: '#/definitions/internal_features_program_transport_http.NewProgramNameDTOResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Program not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Обновить название тренировочной программы
+      tags:
+      - program
+  /programs/{id}/days:
+    post:
+      consumes:
+      - application/json
+      description: Создание тренировочного дня в программе тренировок
+      parameters:
+      - description: ID программы тренировок
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Успешно созданный тренировочный день
+          schema:
+            $ref: '#/definitions/internal_features_program_transport_http.CreateTrainingDayDTOResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Создание тренировочного дня
+      tags:
+      - program
+  /workouts/{id}/complete:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Завершает тренировочный день и записывает результаты выполнения в статистику
+        ***При завершении добавляется оценка усталости по 10-ти бальной шкале***
+      parameters:
+      - description: ID тренировочного дня
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: CompleteTraining тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_workout_transport_http.CompleteTrainingDTORequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Успешно завершенная тренировка
+          schema:
+            $ref: '#/definitions/internal_features_workout_transport_http.CompleteTrainingDTOResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "409":
+          description: Conflict
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Завершить тренировку
+      tags:
+      - workout
+  /workouts/exercises/{id}/sets:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Отмечает выполнение подхода, записывая кол-во повторений и вес
+        ***Кол-во повторений и вес необязательны, для выполнения подхода***
+      parameters:
+      - description: ID тренировочного дня с упражнением
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: ExecuteSet тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_workout_transport_http.ExecuteSetDTORequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Успешно выполненный подход
+          schema:
+            $ref: '#/definitions/internal_features_workout_transport_http.ExecuteSetDTOResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "409":
+          description: Conflict
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Выполнить подход
+      tags:
+      - workout
+  /workouts/statistics:
+    get:
+      description: Получение общей статистики пользователя
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Статистика успешно получена
+          schema:
+            $ref: '#/definitions/internal_features_workout_transport_http.StatisticDTOResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "404":
+          description: Not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Получение статистики
+      tags:
+      - workout
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

@@ -11,6 +11,18 @@ import (
 	"go.uber.org/zap"
 )
 
+// GetProgram   godoc
+// @Summary     Получение программы
+// @Description Получение конкретной программы по ее ID
+// @Tags        program
+// @Produce     json
+// @Param       id path int true "ID получаемой программы"
+// @Security    BearerAuth
+// @Success     200 {object} ProgramDetailsDTOResponse "Программа успешно найдена"
+// @Failure     400 {string} string "Bad request"
+// @Failure     404 {string} string "Not found"
+// @Failure     500 {string} string "Internal server error"
+// @Router      /programs/{id} [get]
 func (h *ProgramHTTPHandler) GetProgram(rw http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(core_middleware.UserIDKey).(uuid.UUID)
 	if !ok {

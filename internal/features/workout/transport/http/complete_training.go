@@ -11,6 +11,22 @@ import (
 	"go.uber.org/zap"
 )
 
+// CompleteTraining godoc
+// @Summary         Завершить тренировку
+// @Description     Завершает тренировочный день и записывает результаты выполнения в статистику
+// @Description     ***При завершении добавляется оценка усталости по 10-ти бальной шкале***
+// @Tags            workout
+// @Accept          json
+// @Produce         json
+// @Security        BearerAuth
+// @Param           id path int true "ID тренировочного дня"
+// @Param           request body CompleteTrainingDTORequest true "CompleteTraining тело запроса"
+// @Success         201 {object} CompleteTrainingDTOResponse "Успешно завершенная тренировка"
+// @Failure         400 {string} string "Bad request"
+// @Failure         401 {string} string "Unauthorized"
+// @Failure         409 {string} string "Conflict"
+// @Failure         500 {string} string "Internal server error"
+// @Router          /workouts/{id}/complete [post]
 func (h *WorkoutHTTPHandler) CompleteTraining(rw http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(core_middleware.UserIDKey).(uuid.UUID)
 	if !ok {
@@ -19,7 +35,7 @@ func (h *WorkoutHTTPHandler) CompleteTraining(rw http.ResponseWriter, r *http.Re
 		return
 	}
 
-	var req DTOFatigueScoreRequest
+	var req CompleteTrainingDTORequest
 
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()

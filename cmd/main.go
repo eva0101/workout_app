@@ -22,8 +22,18 @@ import (
 	workout_transport_http "workout_app/internal/features/workout/transport/http"
 
 	"go.uber.org/zap"
+
+	_ "workout_app/docs/swagger"
 )
 
+// @title                      Workout App API
+// @version                    0.1
+// @description                Workout App REST-API scheme
+// @host                       127.0.0.1:5050
+// @BasePath                   /
+// @securityDefinitions.apikey BearerAuth
+// @in                         header
+// @name                       Authorization
 func main() {
 	ctx, cancel := signal.NotifyContext(
 		context.Background(),
@@ -90,6 +100,8 @@ func main() {
 		router.ServeMux,
 		core_middleware.Logger(log),
 	)
+
+	httpServer.RegisterSwagger()
 
 	if err := httpServer.Run(ctx); err != nil {
 		log.Error("HTTP server run error", zap.Error(err))

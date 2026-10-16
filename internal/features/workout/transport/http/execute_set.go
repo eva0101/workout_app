@@ -11,6 +11,22 @@ import (
 	"go.uber.org/zap"
 )
 
+// ExecuteSet   godoc
+// @Summary     Выполнить подход
+// @Description Отмечает выполнение подхода, записывая кол-во повторений и вес
+// @Description ***Кол-во повторений и вес необязательны, для выполнения подхода***
+// @Tags        workout
+// @Accept      json
+// @Produce     json
+// @Security    BearerAuth
+// @Param       id path int true "ID тренировочного дня с упражнением"
+// @Param       request body ExecuteSetDTORequest true "ExecuteSet тело запроса"
+// @Success     201 {object} ExecuteSetDTOResponse "Успешно выполненный подход"
+// @Failure     400 {string} string "Bad request"
+// @Failure     401 {string} string "Unauthorized"
+// @Failure     409 {string} string "Conflict"
+// @Failure     500 {string} string "Internal server error"
+// @Router      /workouts/exercises/{id}/sets [post]
 func (h *WorkoutHTTPHandler) ExecuteSet(rw http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(core_middleware.UserIDKey).(uuid.UUID)
 	if !ok {
@@ -19,7 +35,7 @@ func (h *WorkoutHTTPHandler) ExecuteSet(rw http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	var req DTOExecuteSetRequest
+	var req ExecuteSetDTORequest
 
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
