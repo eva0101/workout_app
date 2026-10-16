@@ -11,6 +11,19 @@ import (
 	"go.uber.org/zap"
 )
 
+// CreateTrainingDay godoc
+// @Summary          Создание тренировочного дня
+// @Description      Создание тренировочного дня в программе тренировок
+// @Tags             program
+// @Accept           json
+// @Produce          json
+// @Security         BearerAuth
+// @Param            id path int true "ID программы тренировок"
+// @Success          201 {object} CreateTrainingDayDTOResponse "Успешно созданный тренировочный день"
+// @Failure          400 {string} string "Bad request"
+// @Failure          401 {string} string "Unauthorized"
+// @Failure          500 {string} string "Internal server error"
+// @Router           /programs/{id}/days [post]
 func (h *ProgramHTTPHandler) CreateTrainingDay(rw http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(core_middleware.UserIDKey).(uuid.UUID)
 	if !ok {

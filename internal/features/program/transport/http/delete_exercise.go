@@ -9,6 +9,18 @@ import (
 	"github.com/google/uuid"
 )
 
+// DeleteExercise godoc
+// @Summary       Удаление упражнения
+// @Description   Удаление упражнения в тренировочном дне по ID
+// @Tags          program
+// @Security      BearerAuth
+// @Param         id path int true "ID удаляемого упражнения"
+// @Success       204 "Успешное удаление упражнения"
+// @Failure       400 {string} string "Bad request"
+// @Failure       401 {string} string "Unauthorized"
+// @Failure       404 {string} string "Exercise not found"
+// @Failure       500 {string} string "Internal server error"
+// @Router        /days/exercises/{id} [delete]
 func (h *ProgramHTTPHandler) DeleteExercise(rw http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(core_middleware.UserIDKey).(uuid.UUID)
 	if !ok {

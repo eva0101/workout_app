@@ -10,6 +10,19 @@ import (
 	"github.com/google/uuid"
 )
 
+// CreateProgram godoc
+// @Summary      Создание тренировочной программы
+// @Description  Создание тренировочной программы зарегистрировавшегося пользователя
+// @Tags         program
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body CreateProgramDTORequest true "CreateProgram тело запроса"
+// @Success      201 {object} CreateProgramDTOResponse "Успешно созданная программа тренировок"
+// @Failure      400 {string} string "Bad request"
+// @Failure      401 {string} string "Unauthorized"
+// @Failure      500 {string} string "Internal server error"
+// @Router       /programs [post]
 func (h *ProgramHTTPHandler) CreateProgram(rw http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(core_middleware.UserIDKey).(uuid.UUID)
 	if !ok {

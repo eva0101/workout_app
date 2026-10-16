@@ -11,6 +11,20 @@ import (
 	"go.uber.org/zap"
 )
 
+// CreateExercise godoc
+// @Summary       Создание упражнения
+// @Description   Создание нового упражнения в тренировочном дне
+// @Tags          program
+// @Accept        json
+// @Produce       json
+// @Security      BearerAuth
+// @Param         id path int true "ID тренировочного дня"
+// @Param         request body CreateExerciseDTORequest true "CreateExercise тело запроса"
+// @Success       201 {object} CreateExerciseDTOResponse "Успешно созданное упражнение"
+// @Failure       400 {string} string "Bad request"
+// @Failure       401 {string} string "Unauthorized"
+// @Failure       500 {string} string "Internal server error"
+// @Router        /days/{id}/exercises [post]
 func (h *ProgramHTTPHandler) CreateExercise(rw http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(core_middleware.UserIDKey).(uuid.UUID)
 	if !ok {

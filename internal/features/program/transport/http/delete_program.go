@@ -9,6 +9,18 @@ import (
 	"github.com/google/uuid"
 )
 
+// DeleteProgram godoc
+// @Summary      Удаление программы
+// @Description  Удаление программы тренировок по ID
+// @Tags         program
+// @Security     BearerAuth
+// @Param        id path int true "ID программы тренировок"
+// @Success      204 "Успешное удаление программы"
+// @Failure      400 {string} string "Bad request"
+// @Failure      401 {string} string "Unauthorized"
+// @Failure      404 {string} string "Program not found"
+// @Failure      500 {string} string "Internal server error"
+// @Router       /programs/{id} [delete]
 func (h *ProgramHTTPHandler) DeleteProgram(rw http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(core_middleware.UserIDKey).(uuid.UUID)
 	if !ok {

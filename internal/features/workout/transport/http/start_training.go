@@ -11,6 +11,20 @@ import (
 	"go.uber.org/zap"
 )
 
+// StartTraining godoc
+// @Summary      Начать тренировку
+// @Description  Запускает начало тренировочного дня
+// @Tags         workout
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path int true "ID тренировочного дня"
+// @Success      201 {object} StartWorkoutDTOResponse "Успешно начатый тренировочный день"
+// @Failure      400 {string} string "Bad request"
+// @Failure      401 {string} string "Unauthorized"
+// @Failure      409 {string} string "Conflict"
+// @Failure      500 {string} string "Internal server error"
+// @Router       /days/{id}/workouts [post]
 func (h *WorkoutHTTPHandler) StartTraining(rw http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(core_middleware.UserIDKey).(uuid.UUID)
 	if !ok {
