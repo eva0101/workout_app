@@ -23,5 +23,5 @@ type DTOUserPasswordHash struct {
 }
 
 type DTOToken struct {
-	Token string `json:"token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3OTAyMzI5NzIsInVzZXJfaWQiOiI4ZjFWEJT578KTMDcxLTQ1YjUtODViMy0xYmY0ZmFhZTVjOGEifQ.faJA58348Qwr1z1G39aOgOywyxxNN1Cm4oXS5rSGSJ0"`
+	Token string `json:"token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
 }
