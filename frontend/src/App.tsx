@@ -6,6 +6,8 @@ import Sidebar from './components/Sidebar'
 import WeeklyStats from './components/WeeklyStats'
 import WorkoutDialog from './components/WorkoutDialog'
 import { recentWorkouts } from './data'
+import { getStoredToken, removeStoredToken } from './lib/api'
+import AuthPage from './pages/AuthPage'
 
 type Theme = 'light' | 'dark'
 
@@ -15,10 +17,15 @@ function getInitialTheme(): Theme {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 
+function getIsAuthenticated(): boolean {
+  return Boolean(getStoredToken())
+}
+
 export default function App() {
   const [activeItem, setActiveItem] = useState('Обзор')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [theme, setTheme] = useState<Theme>(getInitialTheme)
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(getIsAuthenticated)
 
   function toggleTheme() {
     const nextTheme = theme === 'light' ? 'dark' : 'light'
@@ -26,11 +33,24 @@ export default function App() {
     setTheme(nextTheme)
   }
 
+  function handleLogout() {
+    removeStoredToken()
+    setIsAuthenticated(false)
+  }
+
+  if (!isAuthenticated) {
+    return <AuthPage theme={theme} onToggleTheme={toggleTheme} onAuthSuccess={() => setIsAuthenticated(true)} />
+  }
+
   return (
     <div className="app-shell" data-theme={theme}>
       <Sidebar activeItem={activeItem} onNavigate={setActiveItem} />
       <main className="main-content">
-        <DashboardHeader theme={theme} onToggleTheme={toggleTheme} />
+        <DashboardHeader
+          theme={theme}
+          onToggleTheme={toggleTheme}
+          onLogout={handleLogout}
+        />
         <div className="dashboard-content">
           <div className="section-heading">
             <div>
