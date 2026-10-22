@@ -1,0 +1,1227 @@
+@import "tailwindcss";
+
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: var(--canvas);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-optical-sizing: auto;
+  font-size: 14px;
+  font-weight: 400;
+
+  --ink: #20242b;
+  --muted: #69717c;
+  --subtle: #969da6;
+  --accent: #ed4937;
+  --line: #e7e9ec;
+  --canvas: #f4f5f6;
+  --color-ink: #20242b;
+  --color-muted: #69717c;
+  --color-subtle: #969da6;
+  --color-accent: #ed4937;
+  --color-line: #e7e9ec;
+  --color-canvas: #f4f5f6;
+  --surface: #fff;
+  --surface-muted: #f7f7f8;
+  --surface-soft: #f0f1f3;
+  --accent-wash: #fff0ed;
+  --accent-border: #f7d7d1;
+  --navigation-muted: #747b85;
+  --art-line: rgba(195, 64, 49, 0.15);
+  --art-tile: rgba(255, 255, 255, 0.78);
+  --overlay: rgba(31, 35, 42, 0.42);
+  --shadow: 0 20px 70px rgba(29, 33, 40, 0.2);
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-accent: var(--accent);
+  --color-line: var(--line);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+button {
+  font: inherit;
+}
+
+button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-accent) 38%, transparent);
+  outline-offset: 2px;
+}
+
+.app-shell {
+  min-height: 100vh;
+  color: var(--color-ink);
+  background: var(--color-canvas);
+  transition: color 180ms ease, background-color 180ms ease;
+}
+
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 10;
+  width: 248px;
+  flex-direction: column;
+  border-right: 1px solid #edf0ec;
+  background: #fff;
+  padding: 30px 19px 20px;
+}
+
+.brand-mark {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 12px;
+  background: #e8efe9;
+  color: #5e7f69;
+}
+
+.nav-link {
+  position: relative;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  padding: 11px 12px;
+  color: #7b847d;
+  cursor: pointer;
+  text-align: left;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.nav-link:hover,
+.nav-link-active {
+  background: #f2f6f2;
+  color: #55735f;
+}
+
+.nav-link-active {
+  font-weight: 600;
+}
+
+.nav-indicator {
+  width: 5px;
+  height: 5px;
+  margin-left: auto;
+  border-radius: 50%;
+  background: #698b73;
+}
+
+.sidebar-bottom {
+  margin-top: auto;
+}
+
+.plan-card {
+  border: 1px solid #edf0ec;
+  border-radius: 13px;
+  background: #fafbf9;
+  padding: 14px;
+}
+
+.main-content {
+  min-height: 100vh;
+  margin-left: 248px;
+}
+
+.dashboard-header {
+  display: flex;
+  min-height: 107px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border-bottom: 1px solid #edf0ec;
+  background: rgba(255, 255, 255, 0.78);
+  padding: 19px clamp(24px, 4vw, 55px);
+}
+
+.eyebrow {
+  color: #9aa39c;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.icon-button {
+  position: relative;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid #edf0ec;
+  border-radius: 11px;
+  background: #fff;
+  color: #6f7971;
+  cursor: pointer;
+}
+
+.notification-dot {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 6px;
+  height: 6px;
+  border: 1px solid #fff;
+  border-radius: 50%;
+  background: #c8866e;
+}
+
+.profile-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.avatar {
+  display: grid;
+  width: 37px;
+  height: 37px;
+  place-items: center;
+  border: 1px solid #e5e9e4;
+  border-radius: 50%;
+  background: #e9eee9;
+  color: #587360;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.dashboard-content {
+  width: min(100%, 1220px);
+  margin: 0 auto;
+  padding: 27px clamp(24px, 4vw, 55px) 38px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.week-select {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  border: 1px solid #e9ede8;
+  border-radius: 9px;
+  background: #fff;
+  padding: 8px 11px;
+  color: #636e65;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.72fr) minmax(240px, 0.82fr);
+  align-items: stretch;
+  gap: 16px;
+}
+
+.next-workout-card {
+  position: relative;
+  display: flex;
+  min-height: 236px;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid #e4ebe3;
+  border-radius: 16px;
+  background: linear-gradient(110deg, #f1f5f0 0%, #f7f8f4 63%, #f1f5ef 100%);
+  padding: 25px 28px;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #77947d;
+  box-shadow: 0 0 0 4px rgba(119, 148, 125, 0.12);
+}
+
+.primary-button {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 9px;
+  border: 0;
+  border-radius: 10px;
+  background: #64846f;
+  padding: 0 15px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 4px 10px rgba(76, 111, 87, 0.13);
+  cursor: pointer;
+  transition: background 150ms ease, transform 150ms ease;
+}
+
+.primary-button:hover {
+  transform: translateY(-1px);
+  background: #55755f;
+}
+
+.workout-art {
+  position: absolute;
+  top: 50%;
+  right: 22px;
+  width: 205px;
+  height: 205px;
+  transform: translateY(-50%);
+  color: #78917d;
+}
+
+.art-ring {
+  position: absolute;
+  inset: 50%;
+  border: 1px solid rgba(105, 137, 111, 0.13);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.art-ring-outer {
+  width: 180px;
+  height: 180px;
+}
+
+.art-ring-inner {
+  width: 135px;
+  height: 135px;
+  border-style: dashed;
+}
+
+.art-center {
+  position: absolute;
+  inset: 50%;
+  display: grid;
+  width: 76px;
+  height: 76px;
+  place-items: center;
+  border: 1px solid rgba(105, 137, 111, 0.17);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.6);
+  transform: translate(-50%, -50%) rotate(-8deg);
+}
+
+.art-center svg {
+  transform: rotate(8deg);
+}
+
+.art-caption {
+  position: absolute;
+  right: 4px;
+  bottom: 8px;
+  color: #91a195;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+}
+
+.metric-card,
+.weekly-panel,
+.panel-card {
+  border: 1px solid #edf0ec;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.metric-card {
+  min-height: 139px;
+  padding: 16px;
+}
+
+.metric-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 10px;
+}
+
+.metric-icon-green {
+  background: #edf4ee;
+  color: #66836e;
+}
+
+.metric-icon-sand {
+  background: #f7f1e8;
+  color: #a48b67;
+}
+
+.metric-icon-muted {
+  width: 27px;
+  height: 27px;
+  background: #f8f9f7;
+  color: #a2aaa3;
+}
+
+.trend-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border-radius: 20px;
+  background: #f1f6f1;
+  padding: 4px 7px;
+  color: #60816a;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.weekly-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+}
+
+.streak-badge {
+  border-radius: 7px;
+  background: #eff5ef;
+  padding: 5px 7px;
+  color: #65816c;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.day-marker {
+  display: grid;
+  width: 23px;
+  height: 23px;
+  place-items: center;
+  border: 1px solid #e8ece7;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 11px;
+}
+
+.day-marker-done {
+  border-color: #6e8a74;
+  background: #6e8a74;
+}
+
+.workout-row {
+  display: flex;
+  min-height: 65px;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 20px;
+}
+
+.workout-icon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 10px;
+}
+
+.workout-icon-sage {
+  background: #edf4ee;
+  color: #6b8973;
+}
+
+.workout-icon-sand {
+  background: #f7f1e8;
+  color: #a58d68;
+}
+
+.workout-icon-blue {
+  background: #eef2f6;
+  color: #788ba1;
+}
+
+.completion-check {
+  display: grid;
+  width: 21px;
+  height: 21px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: #eff5ef;
+  color: #68856e;
+}
+
+.row-more {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #a0a8a1;
+  cursor: pointer;
+}
+
+.row-more:hover {
+  background: #f4f6f3;
+}
+
+.text-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  color: #62806a;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.empty-state {
+  display: flex;
+  min-height: 200px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.empty-icon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 14px;
+  background: #eff4ef;
+  color: #77907c;
+}
+
+.demo-note {
+  margin-top: 13px;
+  color: #9aa39c;
+  font-size: 10px;
+  text-align: center;
+}
+
+.mobile-nav {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 20;
+  display: flex;
+  justify-content: space-around;
+  border-top: 1px solid #e9ede8;
+  background: rgba(255, 255, 255, 0.96);
+  padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+  backdrop-filter: blur(12px);
+}
+
+.mobile-nav-link {
+  display: flex;
+  min-width: 64px;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  background: transparent;
+  color: #939c95;
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.mobile-nav-active {
+  color: #5d7c65;
+  font-weight: 600;
+}
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  background: rgba(31, 42, 34, 0.32);
+  padding: 18px;
+  backdrop-filter: blur(3px);
+}
+
+.workout-dialog {
+  width: min(100%, 460px);
+  border: 1px solid #edf0ec;
+  border-radius: 18px;
+  background: #fff;
+  padding: 23px;
+  box-shadow: 0 20px 70px rgba(29, 42, 32, 0.16);
+}
+
+.exercise-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #edf0ec;
+  border-radius: 10px;
+  padding: 11px;
+}
+
+.exercise-number {
+  color: #93a096;
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.app-shell[data-theme="dark"] {
+  --ink: #f1f2f4;
+  --muted: #a4aab3;
+  --subtle: #777f8b;
+  --accent: #ff604d;
+  --line: #343942;
+  --canvas: #17191e;
+  --color-ink: #f1f2f4;
+  --color-muted: #a4aab3;
+  --color-subtle: #777f8b;
+  --color-accent: #ff604d;
+  --color-line: #343942;
+  --color-canvas: #17191e;
+  --surface: #22252b;
+  --surface-muted: #292d34;
+  --surface-soft: #30343c;
+  --accent-wash: #3b2827;
+  --accent-border: #613632;
+  --navigation-muted: #a2a8b1;
+  --art-line: rgba(255, 96, 77, 0.2);
+  --art-tile: rgba(34, 37, 43, 0.82);
+  --overlay: rgba(0, 0, 0, 0.64);
+  --shadow: 0 22px 75px rgba(0, 0, 0, 0.42);
+}
+
+.app-shell h1,
+.app-shell h2,
+.app-shell h3,
+.metric-value {
+  font-weight: 700;
+}
+
+.app-shell .dashboard-header h1 span {
+  color: var(--color-accent);
+}
+
+.sidebar,
+.metric-card,
+.weekly-panel,
+.panel-card,
+.icon-button,
+.week-select,
+.workout-dialog {
+  border-color: var(--color-line);
+  background: var(--surface);
+}
+
+.sidebar {
+  border-right-color: var(--color-line);
+}
+
+.brand-mark,
+.avatar {
+  border-color: var(--accent-border);
+  background: var(--accent-wash);
+  color: var(--color-accent);
+}
+
+.nav-link {
+  color: var(--navigation-muted);
+}
+
+.nav-link:hover,
+.nav-link-active {
+  background: var(--accent-wash);
+  color: var(--color-accent);
+}
+
+.nav-indicator,
+.status-dot,
+.day-marker-done {
+  background: var(--color-accent);
+}
+
+.day-marker-done {
+  border-color: var(--color-accent);
+}
+
+.plan-card,
+.weekly-panel .encouragement,
+.encouragement,
+.dialog-note,
+.exercise-row {
+  border-color: var(--color-line);
+  background: var(--surface-muted);
+}
+
+.sidebar-progress-track,
+.progress-track {
+  background: var(--surface-soft);
+}
+
+.dashboard-header {
+  border-bottom-color: var(--color-line);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+}
+
+.eyebrow,
+.demo-note,
+.exercise-number {
+  color: var(--color-subtle);
+}
+
+.icon-button {
+  color: var(--navigation-muted);
+}
+
+.notification-dot {
+  border-color: var(--surface);
+  background: var(--color-accent);
+}
+
+.week-select {
+  color: var(--color-ink);
+}
+
+.next-workout-card {
+  border-color: var(--accent-border);
+  background: linear-gradient(112deg, var(--accent-wash), var(--surface) 86%);
+}
+
+.workout-eyebrow,
+.workout-meta,
+.workout-art {
+  color: var(--color-accent);
+}
+
+.status-dot {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 16%, transparent);
+}
+
+.primary-button {
+  background: var(--color-accent);
+  box-shadow: 0 5px 13px color-mix(in srgb, var(--color-accent) 22%, transparent);
+}
+
+.primary-button:hover {
+  background: color-mix(in srgb, var(--color-accent) 84%, #16181c);
+}
+
+.art-ring {
+  border-color: var(--art-line);
+}
+
+.art-center {
+  border-color: var(--art-line);
+  background: var(--art-tile);
+}
+
+.art-caption {
+  color: var(--color-muted);
+}
+
+.metric-icon-accent {
+  background: var(--accent-wash);
+  color: var(--color-accent);
+}
+
+.metric-icon-accent-soft {
+  background: var(--surface-soft);
+  color: var(--color-accent);
+}
+
+.metric-icon-muted {
+  background: var(--surface-muted);
+  color: var(--color-muted);
+}
+
+.trend-pill,
+.streak-badge,
+.completion-check {
+  background: var(--accent-wash);
+  color: var(--color-accent);
+}
+
+.weekly-bar:not(.bg-accent) {
+  background: var(--surface-soft);
+}
+
+.weekly-bar.bg-accent {
+  background: var(--color-accent);
+}
+
+.day-marker:not(.day-marker-done) {
+  border-color: var(--color-line);
+}
+
+.workout-icon-sage {
+  background: var(--accent-wash);
+  color: var(--color-accent);
+}
+
+.workout-icon-sand {
+  background: #f5eee4;
+  color: #94754c;
+}
+
+.workout-icon-blue {
+  background: #edf0f5;
+  color: #657991;
+}
+
+.row-more {
+  color: var(--color-muted);
+}
+
+.row-more:hover,
+.empty-icon {
+  background: var(--accent-wash);
+  color: var(--color-accent);
+}
+
+.text-button,
+.mobile-nav-active {
+  color: var(--color-accent);
+}
+
+.mobile-nav {
+  border-top-color: var(--color-line);
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+}
+
+.mobile-nav-link {
+  color: var(--navigation-muted);
+}
+
+.dialog-backdrop {
+  background: var(--overlay);
+}
+
+.workout-dialog {
+  box-shadow: var(--shadow);
+}
+
+.exercise-row {
+  border: 1px solid var(--color-line);
+}
+
+.app-shell[data-theme="dark"] .bg-white {
+  background-color: var(--surface);
+}
+
+.app-shell[data-theme="dark"] .workout-icon-sand {
+  background: #393127;
+  color: #d9b77e;
+}
+
+.app-shell[data-theme="dark"] .workout-icon-blue {
+  background: #29313c;
+  color: #9bb0ca;
+}
+
+.app-shell {
+  --surface: #fff;
+  --surface-muted: #f7f7f8;
+  --surface-soft: #f0f1f3;
+  --accent-wash: #fff0ed;
+  --accent-border: #f7d7d1;
+  --navigation-muted: #747b85;
+  --art-line: rgba(195, 64, 49, 0.15);
+  --art-tile: rgba(255, 255, 255, 0.78);
+  --overlay: rgba(31, 35, 42, 0.42);
+  --shadow: 0 20px 70px rgba(29, 33, 40, 0.2);
+}
+
+.app-shell[data-theme="dark"] {
+  --surface: #22252b;
+  --surface-muted: #292d34;
+  --surface-soft: #30343c;
+  --accent-wash: #3b2827;
+  --accent-border: #613632;
+  --navigation-muted: #a2a8b1;
+  --art-line: rgba(255, 96, 77, 0.2);
+  --art-tile: rgba(34, 37, 43, 0.82);
+  --overlay: rgba(0, 0, 0, 0.64);
+  --shadow: 0 22px 75px rgba(0, 0, 0, 0.42);
+}
+
+.app-shell .sidebar,
+.app-shell .metric-card,
+.app-shell .weekly-panel,
+.app-shell .panel-card,
+.app-shell .icon-button,
+.app-shell .week-select,
+.app-shell .workout-dialog {
+  border-color: var(--color-line);
+  background: var(--surface);
+}
+
+.app-shell .sidebar {
+  border-right-color: var(--color-line);
+}
+
+.app-shell .brand-mark,
+.app-shell .avatar {
+  border-color: var(--accent-border);
+  background: var(--accent-wash);
+  color: var(--color-accent);
+}
+
+.app-shell .nav-link {
+  color: var(--navigation-muted);
+}
+
+.app-shell .nav-link:hover,
+.app-shell .nav-link-active {
+  background: var(--accent-wash);
+  color: var(--color-accent);
+}
+
+.app-shell .nav-indicator,
+.app-shell .status-dot,
+.app-shell .day-marker-done {
+  background: var(--color-accent);
+}
+
+.app-shell .day-marker-done {
+  border-color: var(--color-accent);
+}
+
+.app-shell .plan-card,
+.app-shell .encouragement,
+.app-shell .dialog-note,
+.app-shell .exercise-row {
+  border-color: var(--color-line);
+  background: var(--surface-muted);
+}
+
+.app-shell .sidebar-progress-track,
+.app-shell .progress-track,
+.app-shell .weekly-bar:not(.bg-accent) {
+  background: var(--surface-soft);
+}
+
+.app-shell .dashboard-header {
+  border-bottom-color: var(--color-line);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+}
+
+.app-shell .eyebrow,
+.app-shell .demo-note,
+.app-shell .exercise-number {
+  color: var(--color-subtle);
+}
+
+.app-shell .icon-button,
+.app-shell .row-more {
+  color: var(--navigation-muted);
+}
+
+.app-shell .notification-dot {
+  border-color: var(--surface);
+  background: var(--color-accent);
+}
+
+.app-shell .week-select {
+  color: var(--color-ink);
+}
+
+.app-shell .next-workout-card {
+  border-color: var(--accent-border);
+  background: linear-gradient(112deg, var(--accent-wash), var(--surface) 86%);
+}
+
+.app-shell .workout-eyebrow,
+.app-shell .workout-meta,
+.app-shell .workout-art {
+  color: var(--color-accent);
+}
+
+.app-shell .status-dot {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 16%, transparent);
+}
+
+.app-shell .primary-button {
+  background: var(--color-accent);
+  box-shadow: 0 5px 13px color-mix(in srgb, var(--color-accent) 22%, transparent);
+}
+
+.app-shell .primary-button:hover {
+  background: color-mix(in srgb, var(--color-accent) 84%, #16181c);
+}
+
+.app-shell .art-ring,
+.app-shell .art-center {
+  border-color: var(--art-line);
+}
+
+.app-shell .art-center {
+  background: var(--art-tile);
+}
+
+.app-shell .art-caption {
+  color: var(--color-muted);
+}
+
+.app-shell .metric-icon-accent,
+.app-shell .workout-icon-sage {
+  background: var(--accent-wash);
+  color: var(--color-accent);
+}
+
+.app-shell .metric-icon-accent-soft {
+  background: var(--surface-soft);
+  color: var(--color-accent);
+}
+
+.app-shell .metric-icon-muted {
+  background: var(--surface-muted);
+  color: var(--color-muted);
+}
+
+.app-shell .trend-pill,
+.app-shell .streak-badge,
+.app-shell .completion-check {
+  background: var(--accent-wash);
+  color: var(--color-accent);
+}
+
+.app-shell .weekly-bar.bg-accent {
+  background: var(--color-accent);
+}
+
+.app-shell .day-marker:not(.day-marker-done) {
+  border-color: var(--color-line);
+}
+
+.app-shell .workout-icon-sand {
+  background: #f5eee4;
+  color: #94754c;
+}
+
+.app-shell .workout-icon-blue {
+  background: #edf0f5;
+  color: #657991;
+}
+
+.app-shell[data-theme="dark"] .workout-icon-sand {
+  background: #393127;
+  color: #d9b77e;
+}
+
+.app-shell[data-theme="dark"] .workout-icon-blue {
+  background: #29313c;
+  color: #9bb0ca;
+}
+
+.app-shell .row-more:hover,
+.app-shell .empty-icon {
+  background: var(--accent-wash);
+  color: var(--color-accent);
+}
+
+.app-shell .text-button,
+.app-shell .mobile-nav-active {
+  color: var(--color-accent);
+}
+
+.app-shell .mobile-nav {
+  border-top-color: var(--color-line);
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+}
+
+.app-shell .mobile-nav-link {
+  color: var(--navigation-muted);
+}
+
+.app-shell .mobile-nav-link.mobile-nav-active {
+  color: var(--color-accent);
+}
+
+.app-shell .dialog-backdrop {
+  background: var(--overlay);
+}
+
+.app-shell .workout-dialog {
+  box-shadow: var(--shadow);
+}
+
+.app-shell .exercise-row {
+  border: 1px solid var(--color-line);
+}
+
+.app-shell .bg-white {
+  background-color: var(--surface);
+}
+
+@media (max-width: 1100px) {
+  .dashboard-grid {
+    grid-template-columns: minmax(0, 1.5fr) minmax(220px, 0.85fr);
+  }
+
+  .workout-art {
+    right: 12px;
+    width: 150px;
+    height: 150px;
+  }
+
+  .art-ring-outer {
+    width: 138px;
+    height: 138px;
+  }
+
+  .art-ring-inner {
+    width: 105px;
+    height: 105px;
+  }
+
+  .next-workout-card > div:first-child {
+    max-width: calc(100% - 145px);
+  }
+}
+
+@media (max-width: 1023px) {
+  .main-content {
+    margin-left: 0;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .weekly-panel {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard-header {
+    min-height: 92px;
+    padding: 16px 18px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 19px;
+  }
+
+  .dashboard-header p:last-child {
+    max-width: 245px;
+    font-size: 11px;
+  }
+
+  .dashboard-content {
+    padding: 23px 16px 92px;
+  }
+
+  .section-heading {
+    margin-bottom: 13px;
+  }
+
+  .next-workout-card {
+    min-height: 247px;
+    padding: 22px 19px;
+  }
+
+  .workout-art {
+    top: 10px;
+    right: 10px;
+    width: 88px;
+    height: 88px;
+    transform: none;
+    opacity: 0.32;
+  }
+
+  .next-workout-card > div:first-child {
+    max-width: 100%;
+  }
+
+  .art-ring-outer {
+    width: 82px;
+    height: 82px;
+  }
+
+  .art-ring-inner {
+    width: 62px;
+    height: 62px;
+  }
+
+  .art-center {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+  }
+
+  .art-center svg {
+    width: 27px;
+    height: 27px;
+  }
+
+  .next-workout-card .workout-description {
+    max-width: calc(100% - 76px);
+  }
+
+  .art-caption {
+    display: none;
+  }
+
+  .metric-card {
+    min-height: 135px;
+  }
+
+  .workout-row {
+    gap: 9px;
+    padding: 10px 13px;
+  }
+
+  .workout-row > div:nth-child(4) {
+    font-size: 10px;
+  }
+
+  .workout-row .completion-check {
+    display: none;
+  }
+
+  .panel-card > div:first-child {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .text-button {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 360px) {
+  .workout-art {
+    display: none;
+  }
+
+  .next-workout-card .workout-description {
+    max-width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
