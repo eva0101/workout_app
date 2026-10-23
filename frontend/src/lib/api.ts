@@ -15,9 +15,39 @@ export type RegisterUserResponse = {
   created_at: string
 }
 
+export type Program = {
+  id: number
+  name: string
+  started_at: string
+}
+
+export type ProgramDetails = {
+  id: number
+  name: string
+  training_days: TrainingDaySummary[] | null
+}
+
+export type TrainingDaySummary = {
+  ID: number
+  ProgramID: number
+  DayNumber: number
+}
+
+export type TrainingDayDetails = {
+  id: number
+  day_number: number
+  exercises: Array<{
+    id: number
+    exercise_id: number
+    sets: number
+  }>
+}
+
 export type ApiError = Error & {
   status?: number
 }
+
+export const UNAUTHORIZED_EVENT = 'workout-app:unauthorized'
 
 function clearAuthToken() {
   localStorage.removeItem(AUTH_TOKEN_KEY)
@@ -70,6 +100,9 @@ export async function apiRequest<T>(path: string, init: RequestInit = {}): Promi
 
   if (response.status === 401) {
     clearAuthToken()
+    if (token) {
+      window.dispatchEvent(new Event(UNAUTHORIZED_EVENT))
+    }
   }
 
   if (!response.ok) {
@@ -102,4 +135,44 @@ export async function registerUser(data: AuthRequest): Promise<RegisterUserRespo
     method: 'POST',
     body: JSON.stringify(data),
   })
+}
+
+export async function getPrograms(): Promise<Program[]> {
+  return apiRequest<Program[]>('/programs')
+}
+
+export async function getProgram(id: number): Promise<ProgramDetails> {
+  return apiRequest<ProgramDetails>(`/programs/${id}`)
+}
+
+export async function createProgram(name: string): Promise<Program> {
+  return apiRequest<Program>('/programs', {
+    method: 'POST',
+    body: JSON.stringify({ name }),
+  })
+}
+
+export async function renameProgram(id: number, name: string): Promise<{ name: string }> {
+  return apiRequest<{ name: string }>(`/programs/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ name }),
+  })
+}
+
+export async function deleteProgram(id: number): Promise<void> {
+  await apiRequest<void>(`/programs/${id}`, { method: 'DELETE' })
+}
+
+export async function createTrainingDay(programId: number): Promise<TrainingDaySummary> {
+  return apiRequest<TrainingDaySummary>(`/programs/${programId}/days`, {
+    method: 'POST',
+  })
+}
+
+export async function getTrainingDay(id: number): Promise<TrainingDayDetails> {
+  return apiRequest<TrainingDayDetails>(`/days/${id}`)
+}
+
+export async function deleteTrainingDay(id: number): Promise<void> {
+  await apiRequest<void>(`/days/${id}`, { method: 'DELETE' })
 }
