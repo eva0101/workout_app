@@ -13,7 +13,9 @@ env-cleanup:
 	@read -p "Очистить все данные DB? [y/n]: " ans; \
 	if [ "$$ans" = "y" ]; then \
 		docker compose down workoutapp-postgres && \
-		sudo rm -rf ${PROJECT_ROOT}/../data/workout_app-pgdata && \
+		docker run --rm \
+			-v "$(PROJECT_ROOT)/../data:/data" \
+			alpine sh -c 'rm -rf /data/workout_app-pgdata' && \
 		echo "Файлы окружения очищены"; \
 	else \
 		echo "Отменено"; \

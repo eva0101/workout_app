@@ -34,12 +34,12 @@ export type TrainingDaySummary = {
 }
 
 export type TrainingDayDetails = {
-  id: number
-  day_number: number
-  exercises: Array<{
-    id: number
-    exercise_id: number
-    sets: number
+  ID: number
+  DayNumber: number
+  Exercises: Array<{
+    ID: number
+    ExerciseID: number
+    Sets: number
   }>
 }
 

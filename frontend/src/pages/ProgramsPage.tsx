@@ -266,7 +266,7 @@ export default function ProgramsPage({
                 <div className="program-detail-icon"><Dumbbell size={23} /></div>
                 <div>
                   <p className="eyebrow">{details?.name}</p>
-                  <h2>День {dayDetails.day_number}</h2>
+                  <h2>День {dayDetails.DayNumber}</h2>
                 </div>
               </div>
               <div className="training-day-content">
@@ -279,7 +279,7 @@ export default function ProgramsPage({
                     <Plus size={16} /> Добавить упражнение · недоступно
                   </button>
                 </div>
-                {dayDetails.exercises.length === 0 ? (
+                {dayDetails.Exercises.length === 0 ? (
                   <div className="program-empty-state training-day-empty">
                     <div className="program-empty-icon"><Dumbbell size={22} /></div>
                     <h3>В этом тренировочном дне пока нет упражнений</h3>
@@ -287,11 +287,11 @@ export default function ProgramsPage({
                   </div>
                 ) : (
                   <ol className="training-exercise-list">
-                    {dayDetails.exercises.map((exercise, index) => (
-                      <li className="training-exercise-card" key={exercise.id}>
+                    {dayDetails.Exercises.map((exercise, index) => (
+                      <li className="training-exercise-card" key={exercise.ID}>
                         <span className="exercise-number">{String(index + 1).padStart(2, '0')}</span>
-                        <span className="training-exercise-name">Упражнение #{exercise.exercise_id}</span>
-                        <span className="training-exercise-sets">{exercise.sets} подходов</span>
+                        <span className="training-exercise-name">Упражнение #{exercise.ExerciseID}</span>
+                        <span className="training-exercise-sets">{exercise.Sets} подходов</span>
                       </li>
                     ))}
                   </ol>
