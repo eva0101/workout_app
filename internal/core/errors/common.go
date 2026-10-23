@@ -76,6 +76,16 @@ var (
 		http.StatusNotFound,
 	)
 
+	ErrScheduleConflict = NewAppError(
+		"scheduled workout already exists",
+		http.StatusConflict,
+	)
+
+	ErrScheduledWorkoutNotFound = NewAppError(
+		"scheduled workout not found",
+		http.StatusNotFound,
+	)
+
 	ErrExerciseNotFound = NewAppError(
 		"exercise not found",
 		http.StatusNotFound,
