@@ -586,6 +586,10 @@ button:focus-visible {
   box-shadow: var(--shadow);
 }
 
+.training-day-create-dialog {
+  width: min(100%, 420px);
+}
+
 .program-create-heading {
   display: flex;
   align-items: flex-start;
@@ -638,6 +642,191 @@ button:focus-visible {
   justify-content: flex-end;
   gap: 9px;
   margin-top: 10px;
+}
+
+.schedule-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+  background: var(--overlay);
+  padding: 18px;
+  backdrop-filter: blur(3px);
+}
+
+.schedule-dialog {
+  width: min(100%, 420px);
+  height: auto;
+  min-height: 0;
+  max-height: calc(100dvh - 36px);
+  overflow-y: auto;
+  border: 1px solid var(--color-line);
+  border-radius: 18px;
+  background: var(--surface);
+  padding: 21px;
+  color: var(--color-ink);
+  box-shadow: var(--shadow);
+}
+
+.schedule-dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.schedule-dialog-header h2 {
+  margin: 6px 0 0;
+  color: var(--color-ink);
+  font-size: 1.45rem;
+  font-weight: 750;
+  letter-spacing: -0.055em;
+  line-height: 1.15;
+}
+
+.schedule-calendar-month {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 18px 0 10px;
+}
+
+.schedule-calendar-month h3 {
+  margin: 0;
+  color: var(--color-ink);
+  font-size: 0.98rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.schedule-month-button {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid var(--color-line);
+  border-radius: 9px;
+  background: var(--surface-muted);
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.schedule-month-button:hover {
+  border-color: var(--accent-border);
+  background: var(--accent-wash);
+  color: var(--color-accent);
+}
+
+.schedule-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.schedule-weekday {
+  display: grid;
+  min-height: 28px;
+  place-items: center;
+  color: var(--color-subtle);
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.schedule-calendar-empty {
+  aspect-ratio: 1;
+}
+
+.schedule-date-button {
+  position: relative;
+  display: grid;
+  width: 100%;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-ink);
+  font-size: 0.86rem;
+  font-weight: 550;
+  cursor: pointer;
+  transition: color 130ms ease, background-color 130ms ease, border-color 130ms ease;
+}
+
+.schedule-date-button:hover:not(:disabled) {
+  border-color: var(--accent-border);
+  background: var(--accent-wash);
+}
+
+.schedule-date-button.schedule-date-selected {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: #fff;
+  font-weight: 700;
+}
+
+.schedule-date-button:disabled {
+  color: var(--color-subtle);
+  cursor: not-allowed;
+}
+
+.schedule-date-button.schedule-date-selected:disabled {
+  color: #fff;
+}
+
+.schedule-booked-dot {
+  position: absolute;
+  bottom: 3px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+.schedule-selection-summary {
+  display: flex;
+  min-height: 39px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  margin-top: 12px;
+  border-radius: 10px;
+  background: var(--surface-muted);
+  padding: 8px 10px;
+  color: var(--color-ink);
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.schedule-selection-preview {
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  font-weight: 450;
+}
+
+.schedule-error {
+  margin: 10px 0 0;
+  border: 1px solid color-mix(in srgb, #ef4444 28%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, #ef4444 8%, var(--surface));
+  padding: 9px 10px;
+  color: #d94848;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.schedule-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.schedule-dialog-actions .program-primary-button:disabled,
+.schedule-dialog-actions .program-secondary-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .workout-dialog {
@@ -2041,6 +2230,87 @@ button:focus-visible {
   font-size: 0.79rem;
 }
 
+.scheduled-workouts-section {
+  margin-top: 22px;
+  border: 1px solid var(--color-line);
+  border-radius: 15px;
+  background: var(--surface);
+  padding: 18px;
+}
+
+.scheduled-workouts-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.scheduled-workouts-heading h3 {
+  margin: 6px 0 0;
+  color: var(--color-ink);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+}
+
+.scheduled-workouts-empty {
+  display: flex;
+  min-height: 70px;
+  align-items: center;
+  gap: 10px;
+  border: 1px dashed var(--color-line);
+  border-radius: 11px;
+  padding: 12px;
+  color: var(--color-muted);
+  font-size: 0.84rem;
+}
+
+.scheduled-workouts-empty svg {
+  flex: 0 0 auto;
+  color: var(--color-accent);
+}
+
+.scheduled-workouts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scheduled-workout-item {
+  display: flex;
+  min-height: 50px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid var(--color-line);
+  border-radius: 11px;
+  background: var(--surface-muted);
+  padding: 6px 8px 6px 12px;
+}
+
+.scheduled-workout-date {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 9px;
+  color: var(--color-ink);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.scheduled-workout-date svg {
+  flex: 0 0 auto;
+  color: var(--color-accent);
+}
+
+.schedule-state {
+  min-height: 70px;
+}
+
 .spin {
   animation: spin 900ms linear infinite;
 }
@@ -2107,6 +2377,19 @@ button:focus-visible {
   .training-day-content .training-day-section-heading {
     align-items: flex-start;
   }
+
+  .scheduled-workouts-section {
+    padding: 14px;
+  }
+
+  .scheduled-workouts-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .scheduled-workouts-heading > .program-primary-button {
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
@@ -2147,12 +2430,48 @@ button:focus-visible {
     padding: 17px;
   }
 
+  .training-day-create-dialog {
+    width: 100%;
+  }
+
   .program-create-heading {
     margin-bottom: 16px;
   }
 
   .program-create-heading h2 {
     font-size: 1.3rem;
+  }
+
+  .schedule-modal-backdrop {
+    padding: 10px;
+  }
+
+  .schedule-dialog {
+    width: 100%;
+    max-height: calc(100dvh - 20px);
+    border-radius: 16px;
+    padding: 15px;
+  }
+
+  .schedule-dialog-header h2 {
+    font-size: 1.3rem;
+  }
+
+  .schedule-calendar-month {
+    margin: 13px 0 7px;
+  }
+
+  .schedule-calendar-grid {
+    gap: 2px;
+  }
+
+  .schedule-date-button {
+    border-radius: 8px;
+    font-size: 0.82rem;
+  }
+
+  .schedule-dialog-actions > button {
+    flex: 1;
   }
 }
 

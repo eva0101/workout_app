@@ -42,6 +42,14 @@ definitions:
         example: 8f369546-3071-45b5-85b3-1bf4faae5c8a
         type: string
     type: object
+  internal_features_program_transport_http.CreateTrainingDayDTORequest:
+    properties:
+      name:
+        example: День спины
+        maxLength: 100
+        minLength: 3
+        type: string
+    type: object
   internal_features_program_transport_http.CreateTrainingDayDTOResponse:
     properties:
       day_number:
@@ -50,6 +58,9 @@ definitions:
       id:
         example: 1
         type: integer
+      name:
+        example: День спины
+        type: string
       program_id:
         example: 1
         type: integer
@@ -82,7 +93,7 @@ definitions:
         type: string
       training_days:
         items:
-          $ref: '#/definitions/workout_app_internal_core_domain.TrainingDays'
+          $ref: '#/definitions/internal_features_program_transport_http.TrainingDaySummaryDTOResponse'
         type: array
     type: object
   internal_features_program_transport_http.TrainingDayDTOResponse:
@@ -94,6 +105,25 @@ definitions:
           $ref: '#/definitions/internal_features_program_transport_http.TrainingExerciseResponse'
         type: array
       id:
+        type: integer
+      name:
+        type: string
+    type: object
+  internal_features_program_transport_http.TrainingDaySummaryDTOResponse:
+    properties:
+      day_number:
+        example: 1
+        type: integer
+      id:
+        example: 1
+        type: integer
+      name:
+        example: День спины
+        maxLength: 100
+        minLength: 3
+        type: string
+      program_id:
+        example: 1
         type: integer
     type: object
   internal_features_program_transport_http.TrainingExerciseResponse:
@@ -215,15 +245,6 @@ definitions:
       total_volume:
         example: 160
         type: number
-    type: object
-  workout_app_internal_core_domain.TrainingDays:
-    properties:
-      dayNumber:
-        type: integer
-      id:
-        type: integer
-      programID:
-        type: integer
     type: object
   workout_app_internal_core_dto.DTOAuthorizationUserRequest:
     properties:
@@ -349,6 +370,10 @@ paths:
             type: string
         "404":
           description: Training day not found
+          schema:
+            type: string
+        "409":
+          description: Training day has workout history
           schema:
             type: string
         "500":
@@ -732,6 +757,12 @@ paths:
         name: id
         required: true
         type: integer
+      - description: Название тренировочного дня
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_program_transport_http.CreateTrainingDayDTORequest'
       produces:
       - application/json
       responses:

@@ -76,6 +76,11 @@ var (
 		http.StatusNotFound,
 	)
 
+	ErrTrainingDayHasWorkoutHistory = NewAppError(
+		"training day cannot be deleted because it has workout history",
+		http.StatusConflict,
+	)
+
 	ErrScheduleConflict = NewAppError(
 		"scheduled workout already exists",
 		http.StatusConflict,

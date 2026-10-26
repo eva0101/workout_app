@@ -27,19 +27,33 @@ type ProgramDTOResponse struct {
 }
 
 type ProgramDetailsDTOResponse struct {
-	ID           int                        `json:"id"            example:"1"`
-	Name         string                     `json:"name"          example:"Программа на развитие спины"`
-	TrainingDays []core_domain.TrainingDays `json:"training_days"`
+	ID           int                             `json:"id"            example:"1"`
+	Name         string                          `json:"name"          example:"Программа на развитие спины"`
+	TrainingDays []TrainingDaySummaryDTOResponse `json:"training_days"`
+}
+
+type TrainingDaySummaryDTOResponse struct {
+	ID        int    `json:"id"         example:"1"`
+	ProgramID int    `json:"program_id" example:"1"`
+	DayNumber int    `json:"day_number" example:"1"`
+	Name      string `json:"name"       minLength:"3" maxLength:"100" example:"День спины"`
+}
+
+type CreateTrainingDayDTORequest struct {
+	Name string `json:"name" minLength:"3" maxLength:"100" example:"День спины"`
 }
 
 type CreateTrainingDayDTOResponse struct {
-	ID        int `json:"id"         example:"1"`
-	ProgramID int `json:"program_id" example:"1"`
-	DayNumber int `json:"day_number" example:"1"`
+	ID        int    `json:"id"         example:"1"`
+	ProgramID int    `json:"program_id" example:"1"`
+	DayNumber int    `json:"day_number" example:"1"`
+	Name      string `json:"name"       example:"День спины"`
 }
+
 type TrainingDayDTOResponse struct {
 	ID        int                        `json:"id"`
 	DayNumber int                        `json:"day_number"`
+	Name      string                     `json:"name"`
 	Exercises []TrainingExerciseResponse `json:"exercises"`
 }
 
@@ -79,6 +93,7 @@ func ToTrainingDayResponse(day core_domain.TrainingDay) TrainingDayDTOResponse {
 	response := TrainingDayDTOResponse{
 		ID:        day.ID,
 		DayNumber: day.DayNumber,
+		Name:      day.Name,
 		Exercises: make([]TrainingExerciseResponse, 0, len(day.Exercises)),
 	}
 
@@ -91,4 +106,21 @@ func ToTrainingDayResponse(day core_domain.TrainingDay) TrainingDayDTOResponse {
 	}
 
 	return response
+}
+
+func ToTrainingDaySummaryResponse(day core_domain.TrainingDays) TrainingDaySummaryDTOResponse {
+	return TrainingDaySummaryDTOResponse{
+		ID:        day.ID,
+		ProgramID: day.ProgramID,
+		DayNumber: day.DayNumber,
+		Name:      day.Name,
+	}
+}
+
+func ToTrainingDaySummariesResponse(days []core_domain.TrainingDays) []TrainingDaySummaryDTOResponse {
+	result := make([]TrainingDaySummaryDTOResponse, 0, len(days))
+	for _, day := range days {
+		result = append(result, ToTrainingDaySummaryResponse(day))
+	}
+	return result
 }

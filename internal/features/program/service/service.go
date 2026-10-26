@@ -35,6 +35,7 @@ type ProgramRepository interface {
 		ctx context.Context,
 		userID uuid.UUID,
 		programID int,
+		name string,
 	) (core_domain.TrainingDays, error)
 
 	GetTrainingDay(

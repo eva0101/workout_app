@@ -264,6 +264,12 @@ const docTemplate = `{
                             "type": "string"
                         }
                     },
+                    "409": {
+                        "description": "Training day has workout history",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
@@ -761,6 +767,15 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Название тренировочного дня",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_program_transport_http.CreateTrainingDayDTORequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -1137,6 +1152,17 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_features_program_transport_http.CreateTrainingDayDTORequest": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 3,
+                    "example": "День спины"
+                }
+            }
+        },
         "internal_features_program_transport_http.CreateTrainingDayDTOResponse": {
             "type": "object",
             "properties": {
@@ -1147,6 +1173,10 @@ const docTemplate = `{
                 "id": {
                     "type": "integer",
                     "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "День спины"
                 },
                 "program_id": {
                     "type": "integer",
@@ -1194,7 +1224,7 @@ const docTemplate = `{
                 "training_days": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/workout_app_internal_core_domain.TrainingDays"
+                        "$ref": "#/definitions/internal_features_program_transport_http.TrainingDaySummaryDTOResponse"
                     }
                 }
             }
@@ -1213,6 +1243,32 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_features_program_transport_http.TrainingDaySummaryDTOResponse": {
+            "type": "object",
+            "properties": {
+                "day_number": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 3,
+                    "example": "День спины"
+                },
+                "program_id": {
+                    "type": "integer",
+                    "example": 1
                 }
             }
         },
@@ -1384,20 +1440,6 @@ const docTemplate = `{
                 "total_volume": {
                     "type": "number",
                     "example": 160
-                }
-            }
-        },
-        "workout_app_internal_core_domain.TrainingDays": {
-            "type": "object",
-            "properties": {
-                "dayNumber": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "programID": {
-                    "type": "integer"
                 }
             }
         },

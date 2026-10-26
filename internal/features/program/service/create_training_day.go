@@ -11,11 +11,13 @@ func (s *ProgramService) CreateTrainingDay(
 	ctx context.Context,
 	userID uuid.UUID,
 	programID int,
+	name string,
 ) (core_domain.TrainingDays, error) {
 	trainingDay, err := s.programRepository.CreateTrainingDay(
 		ctx,
 		userID,
 		programID,
+		name,
 	)
 	if err != nil {
 		return core_domain.TrainingDays{}, err

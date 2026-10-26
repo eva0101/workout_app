@@ -28,19 +28,30 @@ export type ProgramDetails = {
 }
 
 export type TrainingDaySummary = {
-  ID: number
-  ProgramID: number
-  DayNumber: number
+  id: number
+  program_id: number
+  day_number: number
+  name: string
 }
 
 export type TrainingDayDetails = {
-  ID: number
-  DayNumber: number
-  Exercises: Array<{
-    ID: number
-    ExerciseID: number
-    Sets: number
+  id: number
+  day_number: number
+  name: string
+  exercises: Array<{
+    id: number
+    exercise_id: number
+    sets: number
   }>
+}
+
+export type ScheduledWorkout = {
+  id: number
+  scheduled_date: string
+  training_day_id: number
+  day_number: number
+  program_name: string
+  created_at?: string
 }
 
 export type ApiError = Error & {
@@ -163,9 +174,10 @@ export async function deleteProgram(id: number): Promise<void> {
   await apiRequest<void>(`/programs/${id}`, { method: 'DELETE' })
 }
 
-export async function createTrainingDay(programId: number): Promise<TrainingDaySummary> {
+export async function createTrainingDay(programId: number, name: string): Promise<TrainingDaySummary> {
   return apiRequest<TrainingDaySummary>(`/programs/${programId}/days`, {
     method: 'POST',
+    body: JSON.stringify({ name }),
   })
 }
 
@@ -175,4 +187,23 @@ export async function getTrainingDay(id: number): Promise<TrainingDayDetails> {
 
 export async function deleteTrainingDay(id: number): Promise<void> {
   await apiRequest<void>(`/days/${id}`, { method: 'DELETE' })
+}
+
+export async function createSchedule(
+  trainingDayId: number,
+  dates: string[],
+): Promise<ScheduledWorkout[]> {
+  return apiRequest<ScheduledWorkout[]>(`/days/${trainingDayId}/schedule`, {
+    method: 'POST',
+    body: JSON.stringify({ dates }),
+  })
+}
+
+export async function getSchedule(from: string, to: string): Promise<ScheduledWorkout[]> {
+  const params = new URLSearchParams({ from, to })
+  return apiRequest<ScheduledWorkout[]>(`/workouts/schedule?${params.toString()}`)
+}
+
+export async function deleteScheduledWorkout(id: number): Promise<void> {
+  await apiRequest<void>(`/workouts/schedule/${id}`, { method: 'DELETE' })
 }

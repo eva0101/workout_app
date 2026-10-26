@@ -41,7 +41,7 @@ func (r *ProgramRepository) GetProgram(
 	rows, err := r.pool.Query(
 		ctx,
 		`
-		SELECT id, program_id, day_number
+		SELECT id, program_id, day_number, name
 		FROM workoutapp.training_days
 		WHERE program_id = $1;
 		`,
@@ -64,6 +64,7 @@ func (r *ProgramRepository) GetProgram(
 			&trainingDay.ID,
 			&trainingDay.ProgramID,
 			&trainingDay.DayNumber,
+			&trainingDay.Name,
 		)
 		if err != nil {
 			r.log.Error(

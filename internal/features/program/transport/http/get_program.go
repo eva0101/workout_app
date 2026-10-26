@@ -49,7 +49,7 @@ func (h *ProgramHTTPHandler) GetProgram(rw http.ResponseWriter, r *http.Request)
 	response := ProgramDetailsDTOResponse{
 		ID:           program.ID,
 		Name:         program.Name,
-		TrainingDays: trainingDays,
+		TrainingDays: ToTrainingDaySummariesResponse(trainingDays),
 	}
 
 	rw.Header().Set("Content-Type", "application/json")
