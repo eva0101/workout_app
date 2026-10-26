@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import DashboardHeader from './components/DashboardHeader'
 import NextWorkoutCard from './components/NextWorkoutCard'
 import RecentWorkouts from './components/RecentWorkouts'
@@ -6,6 +6,9 @@ import Sidebar from './components/Sidebar'
 import WeeklyStats from './components/WeeklyStats'
 import WorkoutDialog from './components/WorkoutDialog'
 import { recentWorkouts } from './data'
+import { getStoredToken, removeStoredToken, UNAUTHORIZED_EVENT } from './lib/api'
+import AuthPage from './pages/AuthPage'
+import ProgramsPage from './pages/ProgramsPage'
 
 type Theme = 'light' | 'dark'
 
@@ -15,10 +18,76 @@ function getInitialTheme(): Theme {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 
+function getIsAuthenticated(): boolean {
+  return Boolean(getStoredToken())
+}
+
+type AppLocation = {
+  activeItem: string
+  programId: number | null
+  dayId: number | null
+}
+
+function readAppLocation(): AppLocation {
+  const params = new URLSearchParams(window.location.search)
+  const programId = Number(params.get('program'))
+  const dayId = Number(params.get('day'))
+  const isProgramRoute = params.get('section') === 'programs' && Number.isInteger(programId) && programId > 0
+
+  return {
+    activeItem: params.get('section') === 'programs' ? 'Программы' : 'Обзор',
+    programId: isProgramRoute ? programId : null,
+    dayId: isProgramRoute && Number.isInteger(dayId) && dayId > 0 ? dayId : null,
+  }
+}
+
+function writeAppLocation(programId: number | null, dayId: number | null, keepProgramsSection = false) {
+  const url = new URL(window.location.href)
+  url.search = ''
+
+  if (programId !== null) {
+    url.searchParams.set('section', 'programs')
+    url.searchParams.set('program', String(programId))
+    if (dayId !== null) url.searchParams.set('day', String(dayId))
+  } else if (keepProgramsSection) {
+    url.searchParams.set('section', 'programs')
+  }
+
+  window.history.pushState(null, '', url)
+}
+
 export default function App() {
-  const [activeItem, setActiveItem] = useState('Обзор')
+  const [initialLocation] = useState(readAppLocation)
+  const [activeItem, setActiveItem] = useState(initialLocation.activeItem)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [theme, setTheme] = useState<Theme>(getInitialTheme)
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(getIsAuthenticated)
+  const [selectedProgramId, setSelectedProgramId] = useState<number | null>(initialLocation.programId)
+  const [selectedDayId, setSelectedDayId] = useState<number | null>(initialLocation.dayId)
+
+  useEffect(() => {
+    function handleUnauthorized() {
+      setIsAuthenticated(false)
+      setActiveItem('Обзор')
+      setSelectedProgramId(null)
+      setSelectedDayId(null)
+    }
+
+    window.addEventListener(UNAUTHORIZED_EVENT, handleUnauthorized)
+    return () => window.removeEventListener(UNAUTHORIZED_EVENT, handleUnauthorized)
+  }, [])
+
+  useEffect(() => {
+    function handlePopState() {
+      const location = readAppLocation()
+      setActiveItem(location.activeItem)
+      setSelectedProgramId(location.programId)
+      setSelectedDayId(location.dayId)
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
 
   function toggleTheme() {
     const nextTheme = theme === 'light' ? 'dark' : 'light'
@@ -26,12 +95,61 @@ export default function App() {
     setTheme(nextTheme)
   }
 
+  function handleLogout() {
+    removeStoredToken()
+    setIsAuthenticated(false)
+    setActiveItem('Обзор')
+    setSelectedProgramId(null)
+    setSelectedDayId(null)
+    writeAppLocation(null, null)
+  }
+
+  if (!isAuthenticated) {
+    return <AuthPage theme={theme} onToggleTheme={toggleTheme} onAuthSuccess={() => setIsAuthenticated(true)} />
+  }
+
   return (
     <div className="app-shell" data-theme={theme}>
-      <Sidebar activeItem={activeItem} onNavigate={setActiveItem} />
+      <Sidebar
+        activeItem={activeItem}
+        onNavigate={(item) => {
+          setActiveItem(item)
+          setSelectedProgramId(null)
+          setSelectedDayId(null)
+          writeAppLocation(null, null, item === 'Программы')
+        }}
+      />
       <main className="main-content">
-        <DashboardHeader theme={theme} onToggleTheme={toggleTheme} />
-        <div className="dashboard-content">
+        <DashboardHeader
+          theme={theme}
+          onToggleTheme={toggleTheme}
+          onLogout={handleLogout}
+        />
+        {activeItem === 'Программы' ? (
+          <ProgramsPage
+            selectedProgramId={selectedProgramId}
+            selectedDayId={selectedDayId}
+            onOpenProgram={(programId) => {
+              setSelectedProgramId(programId)
+              setSelectedDayId(null)
+              writeAppLocation(programId, null)
+            }}
+            onOpenDay={(dayId) => {
+              if (selectedProgramId === null) return
+              setSelectedDayId(dayId)
+              writeAppLocation(selectedProgramId, dayId)
+            }}
+            onBackToPrograms={() => {
+              setSelectedProgramId(null)
+              setSelectedDayId(null)
+              writeAppLocation(null, null, true)
+            }}
+            onBackToProgram={() => {
+              setSelectedDayId(null)
+              if (selectedProgramId !== null) writeAppLocation(selectedProgramId, null)
+            }}
+          />
+        ) : <div className="dashboard-content">
           <div className="section-heading">
             <div>
               <p className="eyebrow">ТВОЙ ПЛАН</p>
@@ -84,7 +202,7 @@ export default function App() {
             <RecentWorkouts workouts={recentWorkouts} />
           </div>
           <p className="demo-note">Демонстрационные данные · история тренировок не сохраняется</p>
-        </div>
+        </div>}
       </main>
       <WorkoutDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
     </div>

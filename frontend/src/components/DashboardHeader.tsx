@@ -3,9 +3,10 @@ import { Bell, ChevronDown, Moon, Sun } from 'lucide-react'
 type DashboardHeaderProps = {
   theme: 'light' | 'dark'
   onToggleTheme: () => void
+  onLogout: () => void
 }
 
-export default function DashboardHeader({ theme, onToggleTheme }: DashboardHeaderProps) {
+export default function DashboardHeader({ theme, onToggleTheme, onLogout }: DashboardHeaderProps) {
   return (
     <header className="dashboard-header">
       <div>
@@ -39,6 +40,9 @@ export default function DashboardHeader({ theme, onToggleTheme }: DashboardHeade
             <span className="mt-0.5 block text-[11px] text-muted">Мой профиль</span>
           </span>
           <ChevronDown size={15} className="hidden text-muted sm:block" />
+        </button>
+        <button className="text-button logout-button" type="button" onClick={onLogout}>
+          Выйти
         </button>
       </div>
     </header>

@@ -264,6 +264,12 @@ const docTemplate = `{
                             "type": "string"
                         }
                     },
+                    "409": {
+                        "description": "Training day has workout history",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
@@ -330,6 +336,79 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/days/{id}/schedule": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Schedules a training day on one or more calendar dates.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "schedule"
+                ],
+                "summary": "Create training-day schedule",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Training day ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Dates to schedule (YYYY-MM-DD)",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_schedule_transport_http.CreateScheduleDTORequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/internal_features_schedule_transport_http.ScheduleDTOResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request or past date",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Training day not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "409": {
+                        "description": "Schedule already exists",
                         "schema": {
                             "type": "string"
                         }
@@ -688,6 +767,15 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Название тренировочного дня",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_program_transport_http.CreateTrainingDayDTORequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -781,6 +869,107 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/workouts/schedule": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns scheduled workouts in an inclusive date range.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "schedule"
+                ],
+                "summary": "Get user's training schedule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Start date (YYYY-MM-DD)",
+                        "name": "from",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "End date (YYYY-MM-DD)",
+                        "name": "to",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/internal_features_schedule_transport_http.ScheduleDTOResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid date or range",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/workouts/schedule/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "tags": [
+                    "schedule"
+                ],
+                "summary": "Delete a scheduled workout",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Schedule record ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Schedule deleted"
+                    },
+                    "400": {
+                        "description": "Invalid schedule ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Schedule not found",
                         "schema": {
                             "type": "string"
                         }
@@ -963,6 +1152,17 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_features_program_transport_http.CreateTrainingDayDTORequest": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 3,
+                    "example": "День спины"
+                }
+            }
+        },
         "internal_features_program_transport_http.CreateTrainingDayDTOResponse": {
             "type": "object",
             "properties": {
@@ -973,6 +1173,10 @@ const docTemplate = `{
                 "id": {
                     "type": "integer",
                     "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "День спины"
                 },
                 "program_id": {
                     "type": "integer",
@@ -1020,7 +1224,7 @@ const docTemplate = `{
                 "training_days": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/workout_app_internal_core_domain.TrainingDays"
+                        "$ref": "#/definitions/internal_features_program_transport_http.TrainingDaySummaryDTOResponse"
                     }
                 }
             }
@@ -1039,6 +1243,32 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_features_program_transport_http.TrainingDaySummaryDTOResponse": {
+            "type": "object",
+            "properties": {
+                "day_number": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 3,
+                    "example": "День спины"
+                },
+                "program_id": {
+                    "type": "integer",
+                    "example": 1
                 }
             }
         },
@@ -1053,6 +1283,49 @@ const docTemplate = `{
                 },
                 "sets": {
                     "type": "integer"
+                }
+            }
+        },
+        "internal_features_schedule_transport_http.CreateScheduleDTORequest": {
+            "type": "object",
+            "properties": {
+                "dates": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "2026-10-26",
+                        "2026-11-02"
+                    ]
+                }
+            }
+        },
+        "internal_features_schedule_transport_http.ScheduleDTOResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "day_number": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "program_name": {
+                    "type": "string",
+                    "example": "Силовая программа"
+                },
+                "scheduled_date": {
+                    "type": "string",
+                    "example": "2026-10-26"
+                },
+                "training_day_id": {
+                    "type": "integer",
+                    "example": 7
                 }
             }
         },
@@ -1170,20 +1443,6 @@ const docTemplate = `{
                 }
             }
         },
-        "workout_app_internal_core_domain.TrainingDays": {
-            "type": "object",
-            "properties": {
-                "dayNumber": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "programID": {
-                    "type": "integer"
-                }
-            }
-        },
         "workout_app_internal_core_dto.DTOAuthorizationUserRequest": {
             "type": "object",
             "properties": {
@@ -1219,7 +1478,7 @@ const docTemplate = `{
             "properties": {
                 "token": {
                     "type": "string",
-                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3OTAyMzI5NzIsInVzZXJfaWQiOiI4ZjFWEJT578KTMDcxLTQ1YjUtODViMy0xYmY0ZmFhZTVjOGEifQ.faJA58348Qwr1z1G39aOgOywyxxNN1Cm4oXS5rSGSJ0"
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                 }
             }
         }

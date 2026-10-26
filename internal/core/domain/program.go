@@ -17,11 +17,13 @@ type TrainingDays struct {
 	ID        int
 	ProgramID int
 	DayNumber int
+	Name      string
 }
 
 type TrainingDay struct {
 	ID        int
 	DayNumber int
+	Name      string
 	Exercises []TrainingExercise
 }
 

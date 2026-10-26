@@ -15,6 +15,7 @@ func (r *ProgramRepository) CreateTrainingDay(
 	ctx context.Context,
 	userID uuid.UUID,
 	programID int,
+	name string,
 ) (core_domain.TrainingDays, error) {
 	tx, err := r.pool.Begin(ctx)
 	if err != nil {
@@ -57,24 +58,28 @@ func (r *ProgramRepository) CreateTrainingDay(
 	query := `
 		INSERT INTO workoutapp.training_days (
 			program_id,
-			day_number
+			day_number,
+			name
 		)
 		SELECT
 			$1,
-			COALESCE(MAX(day_number), 0) + 1
+			COALESCE(MAX(day_number), 0) + 1,
+			$2
 		FROM workoutapp.training_days
 		WHERE program_id = $1
-		RETURNING id, program_id, day_number;
+		RETURNING id, program_id, day_number, name;
 	`
 
 	err = tx.QueryRow(
 		ctx,
 		query,
 		programIDLocked,
+		name,
 	).Scan(
 		&trainingDay.ID,
 		&trainingDay.ProgramID,
 		&trainingDay.DayNumber,
+		&trainingDay.Name,
 	)
 
 	if err != nil {

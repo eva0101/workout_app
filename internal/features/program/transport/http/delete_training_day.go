@@ -18,6 +18,7 @@ import (
 // @Success          204 "Успешное удаление тренировочного дня"
 // @Failure          400 {string} string "Bad request"
 // @Failure          401 {string} string "Unauthorized"
+// @Failure          409 {string} string "Training day has workout history"
 // @Failure          404 {string} string "Training day not found"
 // @Failure          500 {string} string "Internal server error"
 // @Router           /days/{id} [delete]

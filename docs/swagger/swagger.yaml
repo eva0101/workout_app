@@ -42,6 +42,14 @@ definitions:
         example: 8f369546-3071-45b5-85b3-1bf4faae5c8a
         type: string
     type: object
+  internal_features_program_transport_http.CreateTrainingDayDTORequest:
+    properties:
+      name:
+        example: День спины
+        maxLength: 100
+        minLength: 3
+        type: string
+    type: object
   internal_features_program_transport_http.CreateTrainingDayDTOResponse:
     properties:
       day_number:
@@ -50,6 +58,9 @@ definitions:
       id:
         example: 1
         type: integer
+      name:
+        example: День спины
+        type: string
       program_id:
         example: 1
         type: integer
@@ -82,7 +93,7 @@ definitions:
         type: string
       training_days:
         items:
-          $ref: '#/definitions/workout_app_internal_core_domain.TrainingDays'
+          $ref: '#/definitions/internal_features_program_transport_http.TrainingDaySummaryDTOResponse'
         type: array
     type: object
   internal_features_program_transport_http.TrainingDayDTOResponse:
@@ -95,6 +106,25 @@ definitions:
         type: array
       id:
         type: integer
+      name:
+        type: string
+    type: object
+  internal_features_program_transport_http.TrainingDaySummaryDTOResponse:
+    properties:
+      day_number:
+        example: 1
+        type: integer
+      id:
+        example: 1
+        type: integer
+      name:
+        example: День спины
+        maxLength: 100
+        minLength: 3
+        type: string
+      program_id:
+        example: 1
+        type: integer
     type: object
   internal_features_program_transport_http.TrainingExerciseResponse:
     properties:
@@ -103,6 +133,36 @@ definitions:
       id:
         type: integer
       sets:
+        type: integer
+    type: object
+  internal_features_schedule_transport_http.CreateScheduleDTORequest:
+    properties:
+      dates:
+        example:
+        - "2026-10-26"
+        - "2026-11-02"
+        items:
+          type: string
+        type: array
+    type: object
+  internal_features_schedule_transport_http.ScheduleDTOResponse:
+    properties:
+      created_at:
+        type: string
+      day_number:
+        example: 2
+        type: integer
+      id:
+        example: 1
+        type: integer
+      program_name:
+        example: Силовая программа
+        type: string
+      scheduled_date:
+        example: "2026-10-26"
+        type: string
+      training_day_id:
+        example: 7
         type: integer
     type: object
   internal_features_workout_transport_http.CompleteTrainingDTORequest:
@@ -186,15 +246,6 @@ definitions:
         example: 160
         type: number
     type: object
-  workout_app_internal_core_domain.TrainingDays:
-    properties:
-      dayNumber:
-        type: integer
-      id:
-        type: integer
-      programID:
-        type: integer
-    type: object
   workout_app_internal_core_dto.DTOAuthorizationUserRequest:
     properties:
       login:
@@ -219,7 +270,7 @@ definitions:
   workout_app_internal_core_dto.DTOToken:
     properties:
       token:
-        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3OTAyMzI5NzIsInVzZXJfaWQiOiI4ZjFWEJT578KTMDcxLTQ1YjUtODViMy0xYmY0ZmFhZTVjOGEifQ.faJA58348Qwr1z1G39aOgOywyxxNN1Cm4oXS5rSGSJ0
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         type: string
     type: object
 host: 127.0.0.1:5050
@@ -321,6 +372,10 @@ paths:
           description: Training day not found
           schema:
             type: string
+        "409":
+          description: Training day has workout history
+          schema:
+            type: string
         "500":
           description: Internal server error
           schema:
@@ -403,6 +458,53 @@ paths:
       summary: Создание упражнения
       tags:
       - program
+  /days/{id}/schedule:
+    post:
+      consumes:
+      - application/json
+      description: Schedules a training day on one or more calendar dates.
+      parameters:
+      - description: Training day ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Dates to schedule (YYYY-MM-DD)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_schedule_transport_http.CreateScheduleDTORequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            items:
+              $ref: '#/definitions/internal_features_schedule_transport_http.ScheduleDTOResponse'
+            type: array
+        "400":
+          description: Invalid request or past date
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Training day not found
+          schema:
+            type: string
+        "409":
+          description: Schedule already exists
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create training-day schedule
+      tags:
+      - schedule
   /days/{id}/workouts:
     post:
       consumes:
@@ -655,6 +757,12 @@ paths:
         name: id
         required: true
         type: integer
+      - description: Название тренировочного дня
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_program_transport_http.CreateTrainingDayDTORequest'
       produces:
       - application/json
       responses:
@@ -773,6 +881,70 @@ paths:
       summary: Выполнить подход
       tags:
       - workout
+  /workouts/schedule:
+    get:
+      description: Returns scheduled workouts in an inclusive date range.
+      parameters:
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: from
+        required: true
+        type: string
+      - description: End date (YYYY-MM-DD)
+        in: query
+        name: to
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/internal_features_schedule_transport_http.ScheduleDTOResponse'
+            type: array
+        "400":
+          description: Invalid date or range
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get user's training schedule
+      tags:
+      - schedule
+  /workouts/schedule/{id}:
+    delete:
+      parameters:
+      - description: Schedule record ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: Schedule deleted
+        "400":
+          description: Invalid schedule ID
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Schedule not found
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Delete a scheduled workout
+      tags:
+      - schedule
   /workouts/statistics:
     get:
       description: Получение общей статистики пользователя

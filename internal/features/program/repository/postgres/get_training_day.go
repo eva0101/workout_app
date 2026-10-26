@@ -29,6 +29,7 @@ func (r *ProgramRepository) GetTrainingDay(
 		SELECT
 			td.id,
 			td.day_number,
+			td.name,
 			tde.id,
 			tde.exercise_id,
 			tde.sets
@@ -67,6 +68,7 @@ func (r *ProgramRepository) GetTrainingDay(
 		err := rows.Scan(
 			&trainingDay.ID,
 			&trainingDay.DayNumber,
+			&trainingDay.Name,
 			&exerciseTableID,
 			&exerciseID,
 			&sets,
