@@ -18,8 +18,10 @@ CREATE TABLE workoutapp.training_days (
 CREATE TABLE workoutapp.exercise (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) UNIQUE NOT NULL CHECK(char_length(name) BETWEEN 3 AND 100),
-    muscle_group VARCHAR(100) NOT NULL CHECK(char_length(muscle_group) BETWEEN 3 AND 100),
-    description TEXT
+    title TEXT NOT NULL,
+    muscle_group_id INT NOT NULL,
+    description TEXT,
+    image_path TEXT
 );
 
 CREATE TABLE workoutapp.training_day_exercises (
