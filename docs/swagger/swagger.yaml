@@ -1,25 +1,59 @@
 basePath: /
 definitions:
+  internal_features_program_transport_http.CatalogExerciseDTOResponse:
+    properties:
+      description:
+        type: string
+      id:
+        example: 1
+        type: integer
+      image_path:
+        example: /exercises/chest/barbell-bench-press
+        type: string
+      muscle_group_id:
+        example: 1
+        type: integer
+      name:
+        example: barbell bench press
+        type: string
+    type: object
   internal_features_program_transport_http.CreateExerciseDTORequest:
     properties:
       exercise_id:
         example: 3
         type: integer
       sets:
-        example: 4
-        type: integer
+        items:
+          $ref: '#/definitions/internal_features_program_transport_http.CreatePlannedSetDTORequest'
+        type: array
     type: object
   internal_features_program_transport_http.CreateExerciseDTOResponse:
     properties:
+      exercise_id:
+        example: 3
+        type: integer
       id:
         example: 1
         type: integer
       name_exercise:
         example: Подтягивания на бицепс
         type: string
+      planned_sets:
+        items:
+          $ref: '#/definitions/internal_features_program_transport_http.PlannedSetResponse'
+        type: array
       sets:
         example: 4
         type: integer
+    type: object
+  internal_features_program_transport_http.CreatePlannedSetDTORequest:
+    properties:
+      repetitions:
+        example: 10
+        type: integer
+      weight:
+        example: 40
+        type: number
     type: object
   internal_features_program_transport_http.CreateProgramDTORequest:
     properties:
@@ -65,11 +99,38 @@ definitions:
         example: 1
         type: integer
     type: object
+  internal_features_program_transport_http.MuscleGroupDTOResponse:
+    properties:
+      id:
+        example: 1
+        type: integer
+      image_path:
+        example: /exercises/groups/chest.webp
+        type: string
+      name:
+        example: chest
+        type: string
+      title:
+        example: Грудь
+        type: string
+    type: object
   internal_features_program_transport_http.NewProgramNameDTOResponse:
     properties:
       name:
         example: new name
         type: string
+    type: object
+  internal_features_program_transport_http.PlannedSetResponse:
+    properties:
+      repetitions:
+        example: 10
+        type: integer
+      set_number:
+        example: 1
+        type: integer
+      weight:
+        example: 40
+        type: number
     type: object
   internal_features_program_transport_http.ProgramDTOResponse:
     properties:
@@ -132,6 +193,10 @@ definitions:
         type: integer
       id:
         type: integer
+      planned_sets:
+        items:
+          $ref: '#/definitions/internal_features_program_transport_http.PlannedSetResponse'
+        type: array
       sets:
         type: integer
     type: object
@@ -421,7 +486,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: Создание нового упражнения в тренировочном дне
+      description: Добавление упражнения и целевых подходов с повторениями и весом
+        в тренировочный день. Пустой массив допустим.
       parameters:
       - description: ID тренировочного дня
         in: path
@@ -438,7 +504,7 @@ paths:
       - application/json
       responses:
         "201":
-          description: Успешно созданное упражнение
+          description: Упражнение добавлено
           schema:
             $ref: '#/definitions/internal_features_program_transport_http.CreateExerciseDTOResponse'
         "400":
@@ -575,6 +641,57 @@ paths:
       security:
       - BearerAuth: []
       summary: Удаление упражнения
+      tags:
+      - program
+  /exercises:
+    get:
+      description: Получение всех упражнений или упражнений выбранной группы мышц
+      parameters:
+      - description: ID группы мышц
+        in: query
+        name: muscle_group_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Упражнения
+          schema:
+            items:
+              $ref: '#/definitions/internal_features_program_transport_http.CatalogExerciseDTOResponse'
+            type: array
+        "400":
+          description: Invalid muscle_group_id
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Получение упражнений каталога
+      tags:
+      - program
+  /muscle-groups:
+    get:
+      description: Получение всех групп мышц каталога упражнений
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Группы мышц
+          schema:
+            items:
+              $ref: '#/definitions/internal_features_program_transport_http.MuscleGroupDTOResponse'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Получение групп мышц
       tags:
       - program
   /programs:

@@ -2,6 +2,7 @@ package program_repository_postgres
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 	core_domain "workout_app/internal/core/domain"
@@ -32,7 +33,22 @@ func (r *ProgramRepository) GetTrainingDay(
 			td.name,
 			tde.id,
 			tde.exercise_id,
-			tde.sets
+			tde.sets,
+			COALESCE(
+				(
+					SELECT json_agg(
+						json_build_object(
+							'set_number', tes.set_number,
+							'repetitions', tes.repetitions,
+							'weight', tes.weight
+						)
+						ORDER BY tes.set_number
+					)
+					FROM workoutapp.training_day_exercise_sets tes
+					WHERE tes.training_day_exercise_id = tde.id
+				),
+				'[]'::json
+			)
 		FROM workoutapp.training_days td
 		JOIN workoutapp.program p
 		ON td.program_id = p.id
@@ -63,6 +79,7 @@ func (r *ProgramRepository) GetTrainingDay(
 			exerciseTableID *int
 			exerciseID      *int
 			sets            *int
+			plannedSetsJSON []byte
 		)
 
 		err := rows.Scan(
@@ -72,6 +89,7 @@ func (r *ProgramRepository) GetTrainingDay(
 			&exerciseTableID,
 			&exerciseID,
 			&sets,
+			&plannedSetsJSON,
 		)
 		if err != nil {
 			r.log.Error(
@@ -83,10 +101,30 @@ func (r *ProgramRepository) GetTrainingDay(
 		}
 
 		if exerciseID != nil {
+			var plannedSets []struct {
+				SetNumber   int      `json:"set_number"`
+				Repetitions *int     `json:"repetitions"`
+				Weight      *float64 `json:"weight"`
+			}
+			if err := json.Unmarshal(plannedSetsJSON, &plannedSets); err != nil {
+				r.log.Error("failed to decode planned exercise sets", zap.Error(err))
+				return core_domain.TrainingDay{}, fmt.Errorf("decode planned exercise sets: %w", err)
+			}
+
+			domainSets := make([]core_domain.PlannedSet, 0, len(plannedSets))
+			for _, plannedSet := range plannedSets {
+				domainSets = append(domainSets, core_domain.PlannedSet{
+					SetNumber:   plannedSet.SetNumber,
+					Repetitions: plannedSet.Repetitions,
+					Weight:      plannedSet.Weight,
+				})
+			}
+
 			trainingDay.Exercises = append(trainingDay.Exercises, core_domain.TrainingExercise{
-				ID:         *exerciseTableID,
-				ExerciseID: *exerciseID,
-				Sets:       *sets,
+				ID:          *exerciseTableID,
+				ExerciseID:  *exerciseID,
+				Sets:        *sets,
+				PlannedSets: domainSets,
 			})
 		}
 	}

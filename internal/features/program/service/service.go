@@ -44,12 +44,19 @@ type ProgramRepository interface {
 		dayID int,
 	) (core_domain.TrainingDay, error)
 
+	GetMuscleGroups(ctx context.Context) ([]core_domain.MuscleGroup, error)
+
+	GetExercises(
+		ctx context.Context,
+		muscleGroupID *int,
+	) ([]core_domain.CatalogExercise, error)
+
 	CreateExercise(
 		ctx context.Context,
 		userID uuid.UUID,
 		trainingDayID int,
 		exerciseID int,
-		sets int,
+		sets []core_domain.PlannedSet,
 	) (core_domain.Exercise, error)
 
 	DeleteExercise(

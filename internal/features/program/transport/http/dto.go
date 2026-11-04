@@ -58,19 +58,49 @@ type TrainingDayDTOResponse struct {
 }
 
 type TrainingExerciseResponse struct {
-	ID         int `json:"id"`
-	ExerciseID int `json:"exercise_id"`
-	Sets       int `json:"sets"`
+	ID          int                  `json:"id"`
+	ExerciseID  int                  `json:"exercise_id"`
+	Sets        int                  `json:"sets"`
+	PlannedSets []PlannedSetResponse `json:"planned_sets"`
 }
 
 type CreateExerciseDTORequest struct {
-	ExerciseID int `json:"exercise_id" example:"3"`
-	Sets       int `json:"sets"        example:"4"`
+	ExerciseID int                          `json:"exercise_id" example:"3"`
+	Sets       []CreatePlannedSetDTORequest `json:"sets"`
 }
+
+type CreatePlannedSetDTORequest struct {
+	Repetitions *int     `json:"repetitions" example:"10"`
+	Weight      *float64 `json:"weight"      example:"40"`
+}
+
+type PlannedSetResponse struct {
+	SetNumber   int      `json:"set_number"   example:"1"`
+	Repetitions *int     `json:"repetitions"  example:"10"`
+	Weight      *float64 `json:"weight"       example:"40"`
+}
+
 type CreateExerciseDTOResponse struct {
-	ID           int    `json:"id"            example:"1"`
-	NameExercise string `json:"name_exercise" example:"Подтягивания на бицепс"`
-	Sets         int    `json:"sets"          example:"4"`
+	ID           int                  `json:"id"            example:"1"`
+	ExerciseID   int                  `json:"exercise_id"   example:"3"`
+	NameExercise string               `json:"name_exercise" example:"Подтягивания на бицепс"`
+	Sets         int                  `json:"sets"          example:"4"`
+	PlannedSets  []PlannedSetResponse `json:"planned_sets"`
+}
+
+type MuscleGroupDTOResponse struct {
+	ID        int     `json:"id"         example:"1"`
+	Name      string  `json:"name"       example:"chest"`
+	Title     string  `json:"title"      example:"Грудь"`
+	ImagePath *string `json:"image_path" example:"/exercises/groups/chest.webp"`
+}
+
+type CatalogExerciseDTOResponse struct {
+	ID            int     `json:"id"              example:"1"`
+	Name          string  `json:"name"            example:"barbell bench press"`
+	MuscleGroupID int     `json:"muscle_group_id" example:"1"`
+	Description   *string `json:"description"`
+	ImagePath     *string `json:"image_path"      example:"/exercises/chest/barbell-bench-press"`
 }
 
 func ToProgramResponse(
@@ -99,13 +129,53 @@ func ToTrainingDayResponse(day core_domain.TrainingDay) TrainingDayDTOResponse {
 
 	for _, exercise := range day.Exercises {
 		response.Exercises = append(response.Exercises, TrainingExerciseResponse{
-			ID:         exercise.ID,
-			ExerciseID: exercise.ExerciseID,
-			Sets:       exercise.Sets,
+			ID:          exercise.ID,
+			ExerciseID:  exercise.ExerciseID,
+			Sets:        exercise.Sets,
+			PlannedSets: ToPlannedSetResponse(exercise.PlannedSets),
 		})
 	}
 
 	return response
+}
+
+func ToPlannedSetResponse(sets []core_domain.PlannedSet) []PlannedSetResponse {
+	result := make([]PlannedSetResponse, 0, len(sets))
+	for _, set := range sets {
+		result = append(result, PlannedSetResponse{
+			SetNumber:   set.SetNumber,
+			Repetitions: set.Repetitions,
+			Weight:      set.Weight,
+		})
+	}
+	return result
+}
+
+func ToMuscleGroupResponse(groups []core_domain.MuscleGroup) []MuscleGroupDTOResponse {
+	result := make([]MuscleGroupDTOResponse, 0, len(groups))
+	for _, group := range groups {
+		result = append(result, MuscleGroupDTOResponse{
+			ID:        group.ID,
+			Name:      group.Name,
+			Title:     group.Title,
+			ImagePath: group.ImagePath,
+		})
+	}
+	return result
+}
+
+func ToCatalogExerciseResponse(exercises []core_domain.CatalogExercise) []CatalogExerciseDTOResponse {
+	result := make([]CatalogExerciseDTOResponse, 0, len(exercises))
+	for _, exercise := range exercises {
+		result = append(result, CatalogExerciseDTOResponse{
+			ID:            exercise.ID,
+			Name:          exercise.Name,
+			MuscleGroupID: exercise.MuscleGroupID,
+			Description:   exercise.Description,
+			ImagePath:     exercise.ImagePath,
+		})
+	}
+	return result
 }
 
 func ToTrainingDaySummaryResponse(day core_domain.TrainingDays) TrainingDaySummaryDTOResponse {
