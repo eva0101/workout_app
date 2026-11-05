@@ -14,7 +14,7 @@ import (
 func (r *WorkoutRepository) ExecuteSet(
 	ctx context.Context,
 	userID uuid.UUID,
-	trainingDayExerciseID int,
+	workoutExerciseID int,
 	repsDone *int,
 	weight *float64,
 ) (core_domain.WorkoutSet, error) {
@@ -58,25 +58,26 @@ func (r *WorkoutRepository) ExecuteSet(
 	query := `
 		INSERT INTO workoutapp.workout_set (
 			workout_id,
-			training_day_exercises_id,
+			workout_exercise_id,
 			set_number,
 			reps_done,
 			weight
 		)
 		SELECT
 			$1,
-			tde.id,
+			we.id,
 			COALESCE(MAX(ws.set_number), 0) + 1,
 			$3,
 			$4
-		FROM workoutapp.training_day_exercises tde
+		FROM workoutapp.workout_exercise we
 		LEFT JOIN workoutapp.workout_set ws
 			ON ws.workout_id = $1
-			AND ws.training_day_exercises_id = tde.id
-		WHERE tde.id = $2
-		GROUP BY tde.id
+			AND ws.workout_exercise_id = we.id
+		WHERE we.id = $2
+			AND we.workout_id = $1
+		GROUP BY we.id
 		RETURNING
-			training_day_exercises_id,
+			workout_exercise_id,
 			set_number,
 			reps_done,
 			weight;
@@ -86,11 +87,11 @@ func (r *WorkoutRepository) ExecuteSet(
 		ctx,
 		query,
 		workoutID,
-		trainingDayExerciseID,
+		workoutExerciseID,
 		repsDone,
 		weight,
 	).Scan(
-		&workoutSet.TrainingDayExercisesID,
+		&workoutSet.WorkoutExerciseID,
 		&workoutSet.SetNumber,
 		&workoutSet.RepsDone,
 		&workoutSet.Weight,
@@ -98,7 +99,7 @@ func (r *WorkoutRepository) ExecuteSet(
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return core_domain.WorkoutSet{}, core_errors.ErrActiveWorkoutNotFound
+			return core_domain.WorkoutSet{}, core_errors.ErrWorkoutExerciseNotFound
 		}
 
 		r.log.Error(

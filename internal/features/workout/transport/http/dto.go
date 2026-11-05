@@ -1,16 +1,19 @@
 package workout_transport_http
 
-import "time"
+import (
+	"time"
+	core_domain "workout_app/internal/core/domain"
+)
 
 type ExecuteSetDTORequest struct {
 	RepsDone *int     `json:"reps_done" example:"4"`
 	Weight   *float64 `json:"weight"    example:"8"`
 }
 type ExecuteSetDTOResponse struct {
-	TrainingDayExercisesID int      `json:"training_day_exercises_id" example:"1"`
-	SetNumber              int      `json:"set_number"                example:"5"`
-	RepsDone               *int     `json:"reps_done"                 example:"4"`
-	Weight                 *float64 `json:"weight"                    example:"8"`
+	WorkoutExerciseID int      `json:"workout_exercise_id" example:"1"`
+	SetNumber         int      `json:"set_number"          example:"5"`
+	RepsDone          *int     `json:"reps_done"           example:"4"`
+	Weight            *float64 `json:"weight"              example:"8"`
 }
 
 type CompleteTrainingDTORequest struct {
@@ -37,6 +40,38 @@ type StartWorkoutDTOResponse struct {
 	BeginAt       time.Time `json:"begin_at"        example:"2026-10-15T14:36:25.742006+05:00"`
 }
 
+type WorkoutDTOResponse struct {
+	ID          int                       `json:"id" example:"1"`
+	Status      string                    `json:"status" example:"in_progress"`
+	StartedAt   time.Time                 `json:"started_at" example:"2026-10-15T14:36:25.742006+05:00"`
+	CompletedAt *time.Time                `json:"completed_at" example:"2026-10-15T15:36:25.742006+05:00"`
+	Exercises   []WorkoutExerciseResponse `json:"exercises"`
+}
+
+type WorkoutExerciseResponse struct {
+	ID          int                         `json:"id" example:"1"`
+	ExerciseID  int                         `json:"exercise_id" example:"4"`
+	Name        string                      `json:"name" example:"barbell bench press"`
+	Title       string                      `json:"title" example:"Жим штанги лёжа"`
+	Order       int                         `json:"order" example:"1"`
+	PlannedSets []WorkoutPlannedSetResponse `json:"planned_sets"`
+	ActualSets  []WorkoutActualSetResponse  `json:"actual_sets"`
+}
+
+type WorkoutPlannedSetResponse struct {
+	ID          int      `json:"id" example:"1"`
+	SetNumber   int      `json:"set_number" example:"1"`
+	Repetitions *int     `json:"repetitions" example:"10"`
+	Weight      *float64 `json:"weight" example:"40"`
+}
+
+type WorkoutActualSetResponse struct {
+	ID        int      `json:"id" example:"1"`
+	SetNumber int      `json:"set_number" example:"1"`
+	RepsDone  *int     `json:"reps_done" example:"9"`
+	Weight    *float64 `json:"weight" example:"37.5"`
+}
+
 type StatisticDTOResponse struct {
 	ExerciseID     int     `json:"exercise_id"     example:"4"`
 	TotalSets      int     `json:"total_sets"      example:"5"`
@@ -44,4 +79,43 @@ type StatisticDTOResponse struct {
 	MaximumRepeats int     `json:"maximum_repeats" example:"4"`
 	TotalVolume    float64 `json:"total_volume"    example:"160"`
 	MaximumWeight  float64 `json:"maximum_weight"  example:"8"`
+}
+
+func ToWorkoutResponse(workout core_domain.WorkoutDetails) WorkoutDTOResponse {
+	response := WorkoutDTOResponse{
+		ID:          workout.ID,
+		Status:      workout.Status,
+		StartedAt:   workout.StartedAt,
+		CompletedAt: workout.CompletedAt,
+		Exercises:   make([]WorkoutExerciseResponse, 0, len(workout.Exercises)),
+	}
+	for _, exercise := range workout.Exercises {
+		item := WorkoutExerciseResponse{
+			ID:          exercise.ID,
+			ExerciseID:  exercise.ExerciseID,
+			Name:        exercise.Name,
+			Title:       exercise.Title,
+			Order:       exercise.Order,
+			PlannedSets: make([]WorkoutPlannedSetResponse, 0, len(exercise.PlannedSets)),
+			ActualSets:  make([]WorkoutActualSetResponse, 0, len(exercise.ActualSets)),
+		}
+		for _, set := range exercise.PlannedSets {
+			item.PlannedSets = append(item.PlannedSets, WorkoutPlannedSetResponse{
+				ID:          set.ID,
+				SetNumber:   set.SetNumber,
+				Repetitions: set.Repetitions,
+				Weight:      set.Weight,
+			})
+		}
+		for _, set := range exercise.ActualSets {
+			item.ActualSets = append(item.ActualSets, WorkoutActualSetResponse{
+				ID:        set.ID,
+				SetNumber: set.SetNumber,
+				RepsDone:  set.RepsDone,
+				Weight:    set.Weight,
+			})
+		}
+		response.Exercises = append(response.Exercises, item)
+	}
+	return response
 }

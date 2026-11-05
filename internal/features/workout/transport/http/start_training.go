@@ -13,7 +13,7 @@ import (
 
 // StartTraining godoc
 // @Summary      Начать тренировку
-// @Description  Запускает начало тренировочного дня
+// @Description  Создаёт тренировку и копирует в неё текущий план тренировочного дня
 // @Tags         workout
 // @Accept       json
 // @Produce      json

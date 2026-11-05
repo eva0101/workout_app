@@ -85,17 +85,17 @@ func (r *WorkoutRepository) CompleteTraining(
 	)
 	SELECT
 		$1,
-		tde.exercise_id,
+		we.exercise_id,
 		COUNT(ws.id),
 		COALESCE(SUM(ws.reps_done), 0),
 		COALESCE(MAX(ws.reps_done), 0),
 		COALESCE(SUM(ws.reps_done * ws.weight), 0),
 		COALESCE(MAX(ws.weight), 0)
 	FROM workoutapp.workout_set ws
-	JOIN workoutapp.training_day_exercises tde
-		ON tde.id = ws.training_day_exercises_id
+	JOIN workoutapp.workout_exercise we
+		ON we.id = ws.workout_exercise_id
 	WHERE ws.workout_id = $2
-	GROUP BY tde.exercise_id
+	GROUP BY we.exercise_id
 
 	ON CONFLICT (user_id, exercise_id)
 	DO UPDATE SET
