@@ -1,6 +1,8 @@
 import { ArrowLeft, CalendarDays, Dumbbell, FolderPlus, LoaderCircle, Pencil, Plus, RefreshCw, Trash2, X } from 'lucide-react'
-import { type FormEvent, useEffect, useState } from 'react'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
+import ExerciseCatalogDialog from '../components/ExerciseCatalogDialog'
 import ScheduleDialog from '../components/ScheduleDialog'
+import TrainingExerciseDialog from '../components/TrainingExerciseDialog'
 import {
   createProgram,
   createSchedule,
@@ -10,8 +12,12 @@ import {
   deleteTrainingDay,
   getProgram,
   getPrograms,
+  getExercises,
   getSchedule,
   getTrainingDay,
+  type CatalogExercise,
+  type CreatedTrainingDayExercise,
+  type PlannedSet,
   type Program,
   type ProgramDetails,
   type ScheduledWorkout,
@@ -35,7 +41,7 @@ function getErrorMessage(error: unknown): string {
     : undefined
 
   if (status === 401) return 'Сессия завершена. Войдите в аккаунт снова.'
-  if (status === 400) return 'Запрос содержит некорректные данные. Проверьте выбранные даты.'
+  if (status === 400) return 'Запрос содержит некорректные данные. Проверьте введённые значения.'
   if (status === 404) return 'Запись или тренировочный день не найдены. Обновите страницу и попробуйте снова.'
   if (status === 409) return 'Одна или несколько дат уже запланированы для этого тренировочного дня.'
   if (error instanceof TypeError) return 'Не удалось связаться с сервером. Проверьте, запущен ли backend.'
@@ -85,8 +91,14 @@ export default function ProgramsPage({
   const [isDetailsLoading, setIsDetailsLoading] = useState(false)
   const [detailsError, setDetailsError] = useState('')
   const [dayDetails, setDayDetails] = useState<TrainingDayDetails | null>(null)
+  const [viewingExerciseId, setViewingExerciseId] = useState<number | null>(null)
+  const [exerciseSetsSavedToast, setExerciseSetsSavedToast] = useState<'hidden' | 'visible' | 'exiting'>('hidden')
+  const exerciseSetsSavedToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [isDayLoading, setIsDayLoading] = useState(false)
   const [dayError, setDayError] = useState('')
+  const [catalogExercises, setCatalogExercises] = useState<CatalogExercise[]>([])
+  const [catalogError, setCatalogError] = useState('')
+  const [isExerciseCatalogOpen, setIsExerciseCatalogOpen] = useState(false)
   const [dayActionError, setDayActionError] = useState('')
   const [dayFormError, setDayFormError] = useState('')
   const [dayName, setDayName] = useState('')
@@ -94,6 +106,7 @@ export default function ProgramsPage({
   const [isDayDeleting, setIsDayDeleting] = useState(false)
   const [isCreateDayOpen, setIsCreateDayOpen] = useState(false)
   const [scheduledWorkouts, setScheduledWorkouts] = useState<ScheduledWorkout[]>([])
+  const [allScheduledWorkouts, setAllScheduledWorkouts] = useState<ScheduledWorkout[]>([])
   const [isScheduleLoading, setIsScheduleLoading] = useState(false)
   const [scheduleError, setScheduleError] = useState('')
   const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false)
@@ -101,6 +114,12 @@ export default function ProgramsPage({
   const [scheduleSaveError, setScheduleSaveError] = useState('')
   const [scheduleDeleteError, setScheduleDeleteError] = useState('')
   const [deletingScheduleId, setDeletingScheduleId] = useState<number | null>(null)
+
+  useEffect(() => () => {
+    if (exerciseSetsSavedToastTimer.current) {
+      clearTimeout(exerciseSetsSavedToastTimer.current)
+    }
+  }, [])
 
   async function loadPrograms() {
     setIsLoading(true)
@@ -149,6 +168,9 @@ export default function ProgramsPage({
     if (selectedDayId === null) {
       setDayDetails(null)
       setDayError('')
+      setViewingExerciseId(null)
+      setCatalogExercises([])
+      setCatalogError('')
       return
     }
 
@@ -174,7 +196,30 @@ export default function ProgramsPage({
 
   useEffect(() => {
     if (selectedDayId === null) {
+      setCatalogExercises([])
+      setCatalogError('')
+      return
+    }
+
+    let cancelled = false
+    setCatalogError('')
+    getExercises()
+      .then((items) => {
+        if (!cancelled) setCatalogExercises(items)
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) setCatalogError(getErrorMessage(error))
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [selectedDayId])
+
+  useEffect(() => {
+    if (selectedDayId === null) {
       setScheduledWorkouts([])
+      setAllScheduledWorkouts([])
       setScheduleError('')
       return
     }
@@ -185,6 +230,7 @@ export default function ProgramsPage({
     getSchedule('0001-01-01', '9999-12-31')
       .then((items) => {
         if (!cancelled) {
+          setAllScheduledWorkouts(items)
           setScheduledWorkouts(items.filter((item) => item.training_day_id === selectedDayId))
         }
       })
@@ -206,6 +252,7 @@ export default function ProgramsPage({
     setScheduleError('')
     try {
       const items = await getSchedule('0001-01-01', '9999-12-31')
+      setAllScheduledWorkouts(items)
       setScheduledWorkouts(items.filter((item) => item.training_day_id === selectedDayId))
     } catch (error) {
       setScheduleError(getErrorMessage(error))
@@ -219,7 +266,9 @@ export default function ProgramsPage({
     setIsScheduleSaving(true)
     setScheduleSaveError('')
     try {
-      await createSchedule(selectedDayId, dates)
+      const createdWorkouts = await createSchedule(selectedDayId, dates)
+      setAllScheduledWorkouts((current) => [...current, ...createdWorkouts])
+      setScheduledWorkouts((current) => [...current, ...createdWorkouts])
       setIsScheduleDialogOpen(false)
       await refreshSchedule()
     } catch (error) {
@@ -236,6 +285,7 @@ export default function ProgramsPage({
     try {
       await deleteScheduledWorkout(item.id)
       setScheduledWorkouts((current) => current.filter(({ id }) => id !== item.id))
+      setAllScheduledWorkouts((current) => current.filter(({ id }) => id !== item.id))
     } catch (error) {
       setScheduleDeleteError(getErrorMessage(error))
     } finally {
@@ -362,12 +412,85 @@ export default function ProgramsPage({
     }
   }
 
+  function handleExerciseAdded(
+    exercise: CreatedTrainingDayExercise,
+    catalogExercise: CatalogExercise,
+  ) {
+    setDayDetails((current) => current
+      ? {
+          ...current,
+          exercises: [
+            ...current.exercises,
+            {
+              id: exercise.id,
+              exercise_id: exercise.exercise_id,
+              sets: exercise.sets,
+              planned_sets: exercise.planned_sets,
+            },
+          ],
+        }
+      : current,
+    )
+    setCatalogExercises((current) => current.some(({ id }) => id === catalogExercise.id)
+      ? current
+      : [...current, catalogExercise],
+    )
+    setIsExerciseCatalogOpen(false)
+  }
+
+  function handleExerciseDeleted(exerciseId: number) {
+    setDayDetails((current) => current
+      ? {
+          ...current,
+          exercises: current.exercises.filter(({ id }) => id !== exerciseId),
+        }
+      : current,
+    )
+    setViewingExerciseId(null)
+  }
+
+  function handleExerciseSetsSaved(exerciseId: number, plannedSets: PlannedSet[]) {
+    setDayDetails((current) => current
+      ? {
+          ...current,
+          exercises: current.exercises.map((exercise) => (
+            exercise.id === exerciseId
+              ? { ...exercise, sets: plannedSets.length, planned_sets: plannedSets }
+              : exercise
+          )),
+        }
+      : current,
+    )
+    if (exerciseSetsSavedToastTimer.current) {
+      clearTimeout(exerciseSetsSavedToastTimer.current)
+    }
+    setExerciseSetsSavedToast('visible')
+    exerciseSetsSavedToastTimer.current = setTimeout(() => {
+      setExerciseSetsSavedToast('exiting')
+      exerciseSetsSavedToastTimer.current = setTimeout(() => {
+        setExerciseSetsSavedToast('hidden')
+        exerciseSetsSavedToastTimer.current = null
+      }, 300)
+    }, 2500)
+  }
+
   if (selectedProgramId !== null) {
     const trainingDays = details?.training_days ?? []
 
     if (selectedDayId !== null) {
+      const viewingExercise = dayDetails?.exercises.find(({ id }) => id === viewingExerciseId)
+
       return (
         <section className="page-content programs-page">
+          {exerciseSetsSavedToast !== 'hidden' && (
+            <div
+              className={`auth-message auth-message-success exercise-save-toast${exerciseSetsSavedToast === 'exiting' ? ' exercise-save-toast-exiting' : ''}`}
+              role="status"
+              aria-live="polite"
+            >
+              Изменения плановых подходов сохранены.
+            </div>
+          )}
           <button className="program-back-button" type="button" onClick={onBackToProgram}>
             <ArrowLeft size={16} /> К программе
           </button>
@@ -398,23 +521,51 @@ export default function ProgramsPage({
                     <p className="eyebrow">ПЛАН ДНЯ</p>
                     <h3>Упражнения</h3>
                   </div>
-                  <button className="program-primary-button program-unavailable-button" type="button" disabled title="Добавление упражнений появится позже">
-                    <Plus size={16} /> Добавить упражнение · недоступно
+                  <button
+                    className="program-primary-button"
+                    type="button"
+                    onClick={() => setIsExerciseCatalogOpen(true)}
+                  >
+                    <Plus size={16} /> Добавить упражнение
                   </button>
                 </div>
+                {catalogError && <div className="program-alert" role="alert">{catalogError}</div>}
                 {dayDetails.exercises.length === 0 ? (
                   <div className="program-empty-state training-day-empty">
                     <div className="program-empty-icon"><Dumbbell size={22} /></div>
                     <h3>В этом тренировочном дне пока нет упражнений</h3>
-                    <p>Добавление упражнений будет доступно на следующем этапе.</p>
+                    <p>Добавьте первое упражнение из каталога, чтобы составить план дня.</p>
                   </div>
                 ) : (
                   <ol className="training-exercise-list">
                     {dayDetails.exercises.map((exercise, index) => (
                       <li className="training-exercise-card" key={exercise.id}>
                         <span className="exercise-number">{String(index + 1).padStart(2, '0')}</span>
-                        <span className="training-exercise-name">Упражнение #{exercise.exercise_id}</span>
-                        <span className="training-exercise-sets">{exercise.sets} подходов</span>
+                        <button
+                          className="training-exercise-open"
+                          type="button"
+                          onClick={() => setViewingExerciseId(exercise.id)}
+                        >
+                          <span className="training-exercise-info">
+                            <span className="training-exercise-name">
+                              {catalogExercises.find(({ id }) => id === exercise.exercise_id)?.title ?? `Упражнение #${exercise.exercise_id}`}
+                            </span>
+                            {exercise.planned_sets.length > 0 && (
+                              <span className="training-exercise-plan">
+                                {exercise.planned_sets.map((set) => {
+                                  const parameters = [
+                                    set.repetitions !== null ? `${set.repetitions} повт.` : null,
+                                    set.weight !== null ? `${set.weight} кг` : null,
+                                  ].filter(Boolean)
+                                  return `№${set.set_number}: ${parameters.length > 0 ? parameters.join(' · ') : 'без параметров'}`
+                                }).join('  /  ')}
+                              </span>
+                            )}
+                          </span>
+                        </button>
+                        <span className="training-exercise-sets">
+                          {exercise.sets === 0 ? 'Без подходов' : `${exercise.sets} ${exercise.sets === 1 ? 'подход' : exercise.sets < 5 ? 'подхода' : 'подходов'}`}
+                        </span>
                       </li>
                     ))}
                   </ol>
@@ -488,7 +639,8 @@ export default function ProgramsPage({
           )}
           <ScheduleDialog
             open={isScheduleDialogOpen}
-            bookedDates={scheduledWorkouts.map((item) => item.scheduled_date)}
+            scheduledWorkouts={allScheduledWorkouts}
+            trainingDayId={selectedDayId}
             isSaving={isScheduleSaving}
             error={scheduleSaveError}
             onClose={() => {
@@ -497,6 +649,25 @@ export default function ProgramsPage({
             }}
             onSave={(dates) => void handleSaveSchedule(dates)}
           />
+          {isExerciseCatalogOpen && (
+            <ExerciseCatalogDialog
+              trainingDayId={selectedDayId}
+              onClose={() => setIsExerciseCatalogOpen(false)}
+              onAdded={handleExerciseAdded}
+            />
+          )}
+          {viewingExercise && (
+            <TrainingExerciseDialog
+              key={viewingExercise.id}
+              exercise={viewingExercise}
+              catalogExercise={catalogExercises.find(
+                ({ id }) => id === viewingExercise.exercise_id,
+              )}
+              onClose={() => setViewingExerciseId(null)}
+              onDeleted={handleExerciseDeleted}
+              onSaved={handleExerciseSetsSaved}
+            />
+          )}
         </section>
       )
     }

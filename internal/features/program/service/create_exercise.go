@@ -2,7 +2,9 @@ package program_service
 
 import (
 	"context"
+	"math"
 	core_domain "workout_app/internal/core/domain"
+	core_errors "workout_app/internal/core/errors"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -13,8 +15,12 @@ func (s *ProgramService) CreateExercise(
 	userID uuid.UUID,
 	trainingDayID int,
 	exerciseID int,
-	sets int,
+	sets []core_domain.PlannedSet,
 ) (core_domain.Exercise, error) {
+	if err := validatePlannedSets(sets); err != nil {
+		return core_domain.Exercise{}, err
+	}
+
 	exercise, err := s.programRepository.CreateExercise(
 		ctx,
 		userID,
@@ -32,4 +38,17 @@ func (s *ProgramService) CreateExercise(
 	)
 
 	return exercise, nil
+}
+
+func validatePlannedSets(sets []core_domain.PlannedSet) error {
+	if len(sets) > 100 {
+		return core_errors.ErrInvalidPlannedSets
+	}
+	for _, set := range sets {
+		if (set.Repetitions != nil && *set.Repetitions < 0) ||
+			(set.Weight != nil && (math.IsNaN(*set.Weight) || math.IsInf(*set.Weight, 0) || *set.Weight < 0 || *set.Weight > 999.99)) {
+			return core_errors.ErrInvalidPlannedSets
+		}
+	}
+	return nil
 }

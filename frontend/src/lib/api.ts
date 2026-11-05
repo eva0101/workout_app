@@ -42,7 +42,38 @@ export type TrainingDayDetails = {
     id: number
     exercise_id: number
     sets: number
+    planned_sets: PlannedSet[]
   }>
+}
+
+export type PlannedSet = {
+  set_number: number
+  repetitions: number | null
+  weight: number | null
+}
+
+export type MuscleGroup = {
+  id: number
+  name: string
+  title: string
+  image_path: string | null
+}
+
+export type CatalogExercise = {
+  id: number
+  name: string
+  title: string
+  muscle_group_id: number
+  description: string | null
+  image_path: string | null
+}
+
+export type CreatedTrainingDayExercise = {
+  id: number
+  exercise_id: number
+  name_exercise: string
+  sets: number
+  planned_sets: PlannedSet[]
 }
 
 export type ScheduledWorkout = {
@@ -183,6 +214,50 @@ export async function createTrainingDay(programId: number, name: string): Promis
 
 export async function getTrainingDay(id: number): Promise<TrainingDayDetails> {
   return apiRequest<TrainingDayDetails>(`/days/${id}`)
+}
+
+export async function getMuscleGroups(): Promise<MuscleGroup[]> {
+  return apiRequest<MuscleGroup[]>('/muscle-groups')
+}
+
+export async function getExercises(muscleGroupId?: number): Promise<CatalogExercise[]> {
+  const params = new URLSearchParams()
+  if (muscleGroupId !== undefined) params.set('muscle_group_id', String(muscleGroupId))
+  const query = params.size > 0 ? `?${params.toString()}` : ''
+  return apiRequest<CatalogExercise[]>(`/exercises${query}`)
+}
+
+export async function createTrainingDayExercise(
+  trainingDayId: number,
+  exerciseId: number,
+  sets: Array<Pick<PlannedSet, 'repetitions' | 'weight'>>,
+): Promise<CreatedTrainingDayExercise> {
+  return apiRequest<CreatedTrainingDayExercise>(`/days/${trainingDayId}/exercises`, {
+    method: 'POST',
+    body: JSON.stringify({
+      exercise_id: exerciseId,
+      sets,
+    }),
+  })
+}
+
+export async function deleteTrainingDayExercise(id: number): Promise<void> {
+  await apiRequest<void>(`/days/exercises/${id}`, { method: 'DELETE' })
+}
+
+export async function updateTrainingDayExerciseSets(
+  id: number,
+  sets: Array<Pick<PlannedSet, 'repetitions' | 'weight'>>,
+): Promise<void> {
+  await apiRequest<void>(`/days/exercises/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      sets: sets.map(({ repetitions, weight }) => ({
+        reps: repetitions,
+        weight,
+      })),
+    }),
+  })
 }
 
 export async function deleteTrainingDay(id: number): Promise<void> {

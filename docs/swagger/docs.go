@@ -169,6 +169,68 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Атомарно заменяет список плановых подходов упражнения в тренировочном дне",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "program"
+                ],
+                "summary": "Обновление плановых подходов упражнения",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID записи упражнения в тренировочном дне",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Новый список плановых подходов",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_program_transport_http.PatchExerciseSetsDTORequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Плановые подходы обновлены"
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Exercise not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
             }
         },
         "/days/{id}": {
@@ -286,7 +348,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Создание нового упражнения в тренировочном дне",
+                "description": "Добавление упражнения и целевых подходов с повторениями и весом в тренировочный день. Пустой массив допустим.",
                 "consumes": [
                     "application/json"
                 ],
@@ -317,7 +379,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Успешно созданное упражнение",
+                        "description": "Упражнение добавлено",
                         "schema": {
                             "$ref": "#/definitions/internal_features_program_transport_http.CreateExerciseDTOResponse"
                         }
@@ -466,6 +528,88 @@ const docTemplate = `{
                         "description": "Conflict",
                         "schema": {
                             "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/exercises": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Получение всех упражнений или упражнений выбранной группы мышц",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "program"
+                ],
+                "summary": "Получение упражнений каталога",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID группы мышц",
+                        "name": "muscle_group_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Упражнения",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/internal_features_program_transport_http.CatalogExerciseDTOResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid muscle_group_id",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/muscle-groups": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Получение всех групп мышц каталога упражнений",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "program"
+                ],
+                "summary": "Получение групп мышц",
+                "responses": {
+                    "200": {
+                        "description": "Группы мышц",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/internal_features_program_transport_http.MuscleGroupDTOResponse"
+                            }
                         }
                     },
                     "500": {
@@ -1092,6 +1236,34 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "internal_features_program_transport_http.CatalogExerciseDTOResponse": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "image_path": {
+                    "type": "string",
+                    "example": "/exercises/chest/barbell-bench-press"
+                },
+                "muscle_group_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "barbell bench press"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Жим штанги лёжа"
+                }
+            }
+        },
         "internal_features_program_transport_http.CreateExerciseDTORequest": {
             "type": "object",
             "properties": {
@@ -1100,14 +1272,20 @@ const docTemplate = `{
                     "example": 3
                 },
                 "sets": {
-                    "type": "integer",
-                    "example": 4
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_features_program_transport_http.CreatePlannedSetDTORequest"
+                    }
                 }
             }
         },
         "internal_features_program_transport_http.CreateExerciseDTOResponse": {
             "type": "object",
             "properties": {
+                "exercise_id": {
+                    "type": "integer",
+                    "example": 3
+                },
                 "id": {
                     "type": "integer",
                     "example": 1
@@ -1116,9 +1294,52 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Подтягивания на бицепс"
                 },
+                "planned_sets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_features_program_transport_http.PlannedSetResponse"
+                    }
+                },
                 "sets": {
                     "type": "integer",
                     "example": 4
+                }
+            }
+        },
+        "internal_features_program_transport_http.CreatePlannedSetDTORequest": {
+            "type": "object",
+            "properties": {
+                "repetitions": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "weight": {
+                    "type": "number",
+                    "example": 40
+                }
+            }
+        },
+        "internal_features_program_transport_http.PatchExerciseSetsDTORequest": {
+            "type": "object",
+            "properties": {
+                "sets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_features_program_transport_http.PatchPlannedSetDTORequest"
+                    }
+                }
+            }
+        },
+        "internal_features_program_transport_http.PatchPlannedSetDTORequest": {
+            "type": "object",
+            "properties": {
+                "reps": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "weight": {
+                    "type": "number",
+                    "example": 40
                 }
             }
         },
@@ -1184,12 +1405,50 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_features_program_transport_http.MuscleGroupDTOResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "image_path": {
+                    "type": "string",
+                    "example": "/exercises/groups/chest.webp"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "chest"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Грудь"
+                }
+            }
+        },
         "internal_features_program_transport_http.NewProgramNameDTOResponse": {
             "type": "object",
             "properties": {
                 "name": {
                     "type": "string",
                     "example": "new name"
+                }
+            }
+        },
+        "internal_features_program_transport_http.PlannedSetResponse": {
+            "type": "object",
+            "properties": {
+                "repetitions": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "set_number": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "weight": {
+                    "type": "number",
+                    "example": 40
                 }
             }
         },
@@ -1280,6 +1539,12 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
+                },
+                "planned_sets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_features_program_transport_http.PlannedSetResponse"
+                    }
                 },
                 "sets": {
                     "type": "integer"

@@ -46,13 +46,27 @@ type ProgramService interface {
 		dayID int,
 	) (core_domain.TrainingDay, error)
 
+	GetMuscleGroups(ctx context.Context) ([]core_domain.MuscleGroup, error)
+
+	GetExercises(
+		ctx context.Context,
+		muscleGroupID *int,
+	) ([]core_domain.CatalogExercise, error)
+
 	CreateExercise(
 		ctx context.Context,
 		userID uuid.UUID,
 		trainingDayID int,
 		exerciseID int,
-		sets int,
+		sets []core_domain.PlannedSet,
 	) (core_domain.Exercise, error)
+
+	PatchExerciseSets(
+		ctx context.Context,
+		userID uuid.UUID,
+		trainingDayExerciseID int,
+		sets []core_domain.PlannedSet,
+	) error
 
 	DeleteExercise(
 		ctx context.Context,
@@ -123,9 +137,27 @@ func (h *ProgramHTTPHandler) Routes() []core_http_server.Route {
 			Auth:    true,
 		},
 		{
+			Method:  http.MethodGet,
+			Path:    "/muscle-groups",
+			Handler: http.HandlerFunc(h.GetMuscleGroups),
+			Auth:    true,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/exercises",
+			Handler: http.HandlerFunc(h.GetExercises),
+			Auth:    true,
+		},
+		{
 			Method:  http.MethodPost,
 			Path:    "/days/{id}/exercises",
 			Handler: http.HandlerFunc(h.CreateExercise),
+			Auth:    true,
+		},
+		{
+			Method:  http.MethodPatch,
+			Path:    "/days/exercises/{id}",
+			Handler: http.HandlerFunc(h.PatchExerciseSets),
 			Auth:    true,
 		},
 		{

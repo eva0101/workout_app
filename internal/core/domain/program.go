@@ -28,15 +28,40 @@ type TrainingDay struct {
 }
 
 type TrainingExercise struct {
-	ID         int
-	ExerciseID int
-	Sets       int
+	ID          int
+	ExerciseID  int
+	Sets        int
+	PlannedSets []PlannedSet
 }
 
 type Exercise struct {
 	ID           int
+	ExerciseID   int
 	NameExercise string
 	Sets         int
+	PlannedSets  []PlannedSet
+}
+
+type PlannedSet struct {
+	SetNumber   int
+	Repetitions *int
+	Weight      *float64
+}
+
+type MuscleGroup struct {
+	ID        int
+	Name      string
+	Title     string
+	ImagePath *string
+}
+
+type CatalogExercise struct {
+	ID            int
+	Name          string
+	Title         string
+	MuscleGroupID int
+	Description   *string
+	ImagePath     *string
 }
 
 type NewProgramName struct {

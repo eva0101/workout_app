@@ -96,6 +96,11 @@ var (
 		http.StatusNotFound,
 	)
 
+	ErrInvalidPlannedSets = NewAppError(
+		"planned sets must contain at most 100 sets with non-negative values",
+		http.StatusBadRequest,
+	)
+
 	ErrTrainingDayAlreadyCompleted = NewAppError(
 		"this training day was already completed",
 		http.StatusConflict,

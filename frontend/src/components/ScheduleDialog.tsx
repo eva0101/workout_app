@@ -1,9 +1,11 @@
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import type { ScheduledWorkout } from '../lib/api'
 
 type ScheduleDialogProps = {
   open: boolean
-  bookedDates: string[]
+  scheduledWorkouts: ScheduledWorkout[]
+  trainingDayId: number
   isSaving: boolean
   error: string
   onClose: () => void
@@ -37,7 +39,8 @@ function formatDateKey(value: string): string {
 
 export default function ScheduleDialog({
   open,
-  bookedDates,
+  scheduledWorkouts,
+  trainingDayId,
   isSaving,
   error,
   onClose,
@@ -48,9 +51,15 @@ export default function ScheduleDialog({
     return new Date(today.getFullYear(), today.getMonth(), 1)
   })
   const [selectedDates, setSelectedDates] = useState<string[]>([])
+  const [pendingConfirmationDate, setPendingConfirmationDate] = useState<string | null>(null)
+  const [selectionWarning, setSelectionWarning] = useState('')
 
   useEffect(() => {
-    if (open) setSelectedDates([])
+    if (open) {
+      setSelectedDates([])
+      setPendingConfirmationDate(null)
+      setSelectionWarning('')
+    }
   }, [open])
 
   const days = useMemo(() => {
@@ -67,17 +76,48 @@ export default function ScheduleDialog({
   if (!open) return null
 
   const todayKey = toDateKey(startOfToday())
-  const bookedDateSet = new Set(bookedDates)
+  const workoutsByDate = new Map<string, ScheduledWorkout[]>()
+  for (const workout of scheduledWorkouts) {
+    const items = workoutsByDate.get(workout.scheduled_date) ?? []
+    items.push(workout)
+    workoutsByDate.set(workout.scheduled_date, items)
+  }
   const selectedDateSet = new Set(selectedDates)
 
   function toggleDate(date: Date) {
     const key = toDateKey(date)
-    if (key < todayKey || bookedDateSet.has(key)) return
+    if (key < todayKey) return
+    if (selectedDateSet.has(key)) {
+      setSelectedDates((current) => current.filter((value) => value !== key))
+      setSelectionWarning('')
+      setPendingConfirmationDate(null)
+      return
+    }
+
+    const existingWorkouts = workoutsByDate.get(key) ?? []
+    if (existingWorkouts.some((workout) => workout.training_day_id === trainingDayId)) {
+      setSelectionWarning(`На ${formatDateKey(key)} уже запланирован этот тренировочный день. Повторно добавить его на ту же дату нельзя.`)
+      setPendingConfirmationDate(null)
+      return
+    }
+    if (existingWorkouts.length > 0) {
+      setPendingConfirmationDate(key)
+      setSelectionWarning('')
+      return
+    }
+
     setSelectedDates((current) =>
-      current.includes(key)
-        ? current.filter((value) => value !== key)
-        : [...current, key].sort(),
+      [...current, key].sort(),
     )
+    setPendingConfirmationDate(null)
+    setSelectionWarning('')
+  }
+
+  function confirmSecondWorkout() {
+    if (!pendingConfirmationDate) return
+    setSelectedDates((current) => [...current, pendingConfirmationDate].sort())
+    setPendingConfirmationDate(null)
+    setSelectionWarning('')
   }
 
   function changeMonth(delta: number) {
@@ -87,6 +127,8 @@ export default function ScheduleDialog({
   function handleClose() {
     if (isSaving) return
     setSelectedDates([])
+    setPendingConfirmationDate(null)
+    setSelectionWarning('')
     onClose()
   }
 
@@ -152,7 +194,8 @@ export default function ScheduleDialog({
             const date = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), day)
             const key = toDateKey(date)
             const isPast = key < todayKey
-            const isBooked = bookedDateSet.has(key)
+            const existingWorkouts = workoutsByDate.get(key) ?? []
+            const isBooked = existingWorkouts.length > 0
             const isSelected = selectedDateSet.has(key)
             return (
               <button
@@ -161,13 +204,14 @@ export default function ScheduleDialog({
                 className={[
                   'schedule-date-button',
                   isSelected ? 'schedule-date-selected' : '',
-                  isPast || isBooked ? 'schedule-date-disabled' : '',
+                  isBooked ? 'schedule-date-booked' : '',
+                  isPast ? 'schedule-date-disabled' : '',
                 ].filter(Boolean).join(' ')}
-                disabled={isPast || isBooked || isSaving}
+                disabled={isPast || isSaving}
                 key={key}
                 onClick={() => toggleDate(date)}
                 role="gridcell"
-                title={isBooked ? 'Тренировка на этот день уже запланирована' : undefined}
+                title={isBooked ? 'На эту дату уже запланирована тренировка' : undefined}
                 type="button"
               >
                 {day}
@@ -177,6 +221,34 @@ export default function ScheduleDialog({
           })}
         </div>
 
+        {pendingConfirmationDate && (
+          <div className="schedule-overlap-confirmation" role="alertdialog" aria-live="polite">
+            <p>
+              На {formatDateKey(pendingConfirmationDate)} уже запланирована тренировка.
+              Вы пытаетесь добавить вторую тренировку на этот день.
+            </p>
+            <div>
+              <button
+                className="program-secondary-button"
+                type="button"
+                disabled={isSaving}
+                onClick={() => setPendingConfirmationDate(null)}
+              >
+                Отменить
+              </button>
+              <button
+                className="program-primary-button"
+                type="button"
+                disabled={isSaving}
+                onClick={confirmSecondWorkout}
+              >
+                Всё равно добавить
+              </button>
+            </div>
+          </div>
+        )}
+
+        {selectionWarning && <p className="schedule-error" role="alert">{selectionWarning}</p>}
         <div className="schedule-selection-summary" aria-live="polite">
           <span>
             {selectedDates.length === 0
