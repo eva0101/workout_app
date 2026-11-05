@@ -76,10 +76,10 @@ type StartWorkout struct {
 }
 
 type WorkoutSet struct {
-	TrainingDayExercisesID int
-	SetNumber              int
-	RepsDone               *int
-	Weight                 *float64
+	WorkoutExerciseID int
+	SetNumber         int
+	RepsDone          *int
+	Weight            *float64
 }
 
 type Workout struct {
@@ -87,6 +87,38 @@ type Workout struct {
 	Status        string
 	FatigueScore  int
 	TotalTime     time.Duration
+}
+
+type WorkoutDetails struct {
+	ID          int
+	Status      string
+	StartedAt   time.Time
+	CompletedAt *time.Time
+	Exercises   []WorkoutExerciseSnapshot
+}
+
+type WorkoutExerciseSnapshot struct {
+	ID          int
+	ExerciseID  int
+	Name        string
+	Title       string
+	Order       int
+	PlannedSets []WorkoutPlannedSet
+	ActualSets  []WorkoutActualSet
+}
+
+type WorkoutPlannedSet struct {
+	ID          int
+	SetNumber   int
+	Repetitions *int
+	Weight      *float64
+}
+
+type WorkoutActualSet struct {
+	ID        int
+	SetNumber int
+	RepsDone  *int
+	Weight    *float64
 }
 
 type Statistic struct {

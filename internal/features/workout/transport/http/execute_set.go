@@ -19,12 +19,12 @@ import (
 // @Accept      json
 // @Produce     json
 // @Security    BearerAuth
-// @Param       id path int true "ID тренировочного дня с упражнением"
+// @Param       id path int true "ID упражнения в снимке активной тренировки"
 // @Param       request body ExecuteSetDTORequest true "ExecuteSet тело запроса"
 // @Success     201 {object} ExecuteSetDTOResponse "Успешно выполненный подход"
 // @Failure     400 {string} string "Bad request"
 // @Failure     401 {string} string "Unauthorized"
-// @Failure     409 {string} string "Conflict"
+// @Failure     404 {string} string "Workout or exercise not found"
 // @Failure     500 {string} string "Internal server error"
 // @Router      /workouts/exercises/{id}/sets [post]
 func (h *WorkoutHTTPHandler) ExecuteSet(rw http.ResponseWriter, r *http.Request) {
@@ -45,9 +45,9 @@ func (h *WorkoutHTTPHandler) ExecuteSet(rw http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	trainingDayExerciseID, err := core_http_request.GetIntPathValue(r, "id")
+	workoutExerciseID, err := core_http_request.GetIntPathValue(r, "id")
 	if err != nil {
-		http.Error(rw, "failed to get trainingDayExerciseID path value", http.StatusBadRequest)
+		http.Error(rw, "failed to get workoutExerciseID path value", http.StatusBadRequest)
 
 		return
 	}
@@ -55,7 +55,7 @@ func (h *WorkoutHTTPHandler) ExecuteSet(rw http.ResponseWriter, r *http.Request)
 	workoutSet, err := h.workoutService.ExecuteSet(
 		r.Context(),
 		userID,
-		trainingDayExerciseID,
+		workoutExerciseID,
 		req.RepsDone,
 		req.Weight,
 	)
@@ -68,7 +68,13 @@ func (h *WorkoutHTTPHandler) ExecuteSet(rw http.ResponseWriter, r *http.Request)
 	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusCreated)
 
-	if err := json.NewEncoder(rw).Encode(workoutSet); err != nil {
+	response := ExecuteSetDTOResponse{
+		WorkoutExerciseID: workoutSet.WorkoutExerciseID,
+		SetNumber:         workoutSet.SetNumber,
+		RepsDone:          workoutSet.RepsDone,
+		Weight:            workoutSet.Weight,
+	}
+	if err := json.NewEncoder(rw).Encode(response); err != nil {
 		h.log.Error(
 			"failed to encode workout set",
 			zap.Error(err),

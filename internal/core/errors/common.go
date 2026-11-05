@@ -76,11 +76,6 @@ var (
 		http.StatusNotFound,
 	)
 
-	ErrTrainingDayHasWorkoutHistory = NewAppError(
-		"training day cannot be deleted because it has workout history",
-		http.StatusConflict,
-	)
-
 	ErrScheduleConflict = NewAppError(
 		"scheduled workout already exists",
 		http.StatusConflict,
@@ -101,11 +96,6 @@ var (
 		http.StatusBadRequest,
 	)
 
-	ErrTrainingDayAlreadyCompleted = NewAppError(
-		"this training day was already completed",
-		http.StatusConflict,
-	)
-
 	ErrWorkoutAlreadyInProgress = NewAppError(
 		"there is already a running workout",
 		http.StatusConflict,
@@ -113,6 +103,11 @@ var (
 
 	ErrActiveWorkoutNotFound = NewAppError(
 		"there is no active training at the moment",
+		http.StatusNotFound,
+	)
+
+	ErrWorkoutExerciseNotFound = NewAppError(
+		"exercise is not part of the active workout",
 		http.StatusNotFound,
 	)
 

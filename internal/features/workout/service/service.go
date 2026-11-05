@@ -23,7 +23,7 @@ type WorkoutRepository interface {
 	ExecuteSet(
 		ctx context.Context,
 		userID uuid.UUID,
-		trainingDayExerciseID int,
+		workoutExerciseID int,
 		repsDone *int,
 		weight *float64,
 	) (core_domain.WorkoutSet, error)
@@ -39,6 +39,17 @@ type WorkoutRepository interface {
 		ctx context.Context,
 		userID uuid.UUID,
 	) ([]core_domain.Statistic, error)
+
+	GetActiveWorkout(
+		ctx context.Context,
+		userID uuid.UUID,
+	) (core_domain.WorkoutDetails, error)
+
+	GetWorkout(
+		ctx context.Context,
+		userID uuid.UUID,
+		workoutID int,
+	) (core_domain.WorkoutDetails, error)
 }
 
 func NewWorkoutService(

@@ -40,6 +40,7 @@ func (r *WorkoutRepository) StartTraining(
 		ON p.id = td.program_id
 	WHERE td.id = $1
 		AND p.user_id = $2
+	FOR UPDATE OF td
 	`
 	err = tx.QueryRow(
 		ctx,
@@ -92,6 +93,36 @@ func (r *WorkoutRepository) StartTraining(
 		return core_domain.StartWorkout{}, core_errors.ErrWorkoutAlreadyInProgress
 	}
 
+	rows, err := tx.Query(
+		ctx,
+		`
+		SELECT id
+		FROM workoutapp.training_day_exercises
+		WHERE training_day_id = $1
+		ORDER BY id
+		FOR SHARE;
+		`,
+		dayID,
+	)
+	if err != nil {
+		r.log.Error("failed to lock training day exercises", zap.Error(err))
+		return core_domain.StartWorkout{}, err
+	}
+	for rows.Next() {
+		var trainingDayExerciseID int
+		if err := rows.Scan(&trainingDayExerciseID); err != nil {
+			rows.Close()
+			r.log.Error("failed to scan locked training day exercise", zap.Error(err))
+			return core_domain.StartWorkout{}, err
+		}
+	}
+	if err := rows.Err(); err != nil {
+		rows.Close()
+		r.log.Error("failed to iterate locked training day exercises", zap.Error(err))
+		return core_domain.StartWorkout{}, err
+	}
+	rows.Close()
+
 	var workout core_domain.StartWorkout
 
 	query = `
@@ -123,16 +154,77 @@ func (r *WorkoutRepository) StartTraining(
 		var pgErr *pgconn.PgError
 
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			if pgErr.ConstraintName == "unique_training_day" {
-				return core_domain.StartWorkout{}, core_errors.ErrTrainingDayAlreadyCompleted
-			}
-			if pgErr.ColumnName == "one_active_workout_per_user" {
+			if pgErr.ConstraintName == "one_active_workout_per_user" {
 				return core_domain.StartWorkout{}, core_errors.ErrWorkoutAlreadyInProgress
 			}
 		}
 
 		r.log.Error(
 			"failed to create workout",
+			zap.Error(err),
+		)
+
+		return core_domain.StartWorkout{}, err
+	}
+
+	_, err = tx.Exec(
+		ctx,
+		`
+		INSERT INTO workoutapp.workout_exercise (
+			workout_id,
+			source_training_day_exercise_id,
+			exercise_id,
+			exercise_name,
+			exercise_title,
+			sort_order
+		)
+		SELECT
+			$1,
+			tde.id,
+			e.id,
+			e.name,
+			e.title,
+			ROW_NUMBER() OVER (ORDER BY tde.id)::INT
+		FROM workoutapp.training_day_exercises tde
+		JOIN workoutapp.exercise e ON e.id = tde.exercise_id
+		WHERE tde.training_day_id = $2;
+		`,
+		workout.ID,
+		dayID,
+	)
+	if err != nil {
+		r.log.Error(
+			"failed to snapshot workout exercises",
+			zap.Error(err),
+		)
+
+		return core_domain.StartWorkout{}, err
+	}
+
+	_, err = tx.Exec(
+		ctx,
+		`
+		INSERT INTO workoutapp.workout_exercise_sets (
+			workout_exercise_id,
+			set_number,
+			repetitions,
+			weight
+		)
+		SELECT
+			we.id,
+			tes.set_number,
+			tes.repetitions,
+			tes.weight
+		FROM workoutapp.workout_exercise we
+		JOIN workoutapp.training_day_exercise_sets tes
+			ON tes.training_day_exercise_id = we.source_training_day_exercise_id
+		WHERE we.workout_id = $1;
+		`,
+		workout.ID,
+	)
+	if err != nil {
+		r.log.Error(
+			"failed to snapshot workout planned sets",
 			zap.Error(err),
 		)
 

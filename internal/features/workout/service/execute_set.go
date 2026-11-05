@@ -11,14 +11,14 @@ import (
 func (s *WorkoutService) ExecuteSet(
 	ctx context.Context,
 	userID uuid.UUID,
-	trainingDayExerciseID int,
+	workoutExerciseID int,
 	repsDone *int,
 	weight *float64,
 ) (core_domain.WorkoutSet, error) {
 	workoutSet, err := s.workoutRepository.ExecuteSet(
 		ctx,
 		userID,
-		trainingDayExerciseID,
+		workoutExerciseID,
 		repsDone,
 		weight,
 	)
@@ -29,7 +29,7 @@ func (s *WorkoutService) ExecuteSet(
 
 	s.log.Info(
 		"training approach was completed",
-		zap.Int("training_day_exercises_id", workoutSet.TrainingDayExercisesID),
+		zap.Int("workout_exercise_id", workoutSet.WorkoutExerciseID),
 		zap.Int("set_number", workoutSet.SetNumber),
 	)
 
