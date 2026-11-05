@@ -58,6 +58,7 @@ type MuscleGroup struct {
 type CatalogExercise struct {
 	ID            int
 	Name          string
+	Title         string
 	MuscleGroupID int
 	Description   *string
 	ImagePath     *string

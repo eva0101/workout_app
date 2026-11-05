@@ -59,6 +59,13 @@ type ProgramRepository interface {
 		sets []core_domain.PlannedSet,
 	) (core_domain.Exercise, error)
 
+	PatchExerciseSets(
+		ctx context.Context,
+		userID uuid.UUID,
+		trainingDayExerciseID int,
+		sets []core_domain.PlannedSet,
+	) error
+
 	DeleteExercise(
 		ctx context.Context,
 		userID uuid.UUID,

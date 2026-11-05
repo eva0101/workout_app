@@ -17,14 +17,8 @@ func (s *ProgramService) CreateExercise(
 	exerciseID int,
 	sets []core_domain.PlannedSet,
 ) (core_domain.Exercise, error) {
-	if len(sets) > 100 {
-		return core_domain.Exercise{}, core_errors.ErrInvalidPlannedSets
-	}
-	for _, set := range sets {
-		if (set.Repetitions != nil && *set.Repetitions < 0) ||
-			(set.Weight != nil && (math.IsNaN(*set.Weight) || math.IsInf(*set.Weight, 0) || *set.Weight < 0 || *set.Weight > 999.99)) {
-			return core_domain.Exercise{}, core_errors.ErrInvalidPlannedSets
-		}
+	if err := validatePlannedSets(sets); err != nil {
+		return core_domain.Exercise{}, err
 	}
 
 	exercise, err := s.programRepository.CreateExercise(
@@ -44,4 +38,17 @@ func (s *ProgramService) CreateExercise(
 	)
 
 	return exercise, nil
+}
+
+func validatePlannedSets(sets []core_domain.PlannedSet) error {
+	if len(sets) > 100 {
+		return core_errors.ErrInvalidPlannedSets
+	}
+	for _, set := range sets {
+		if (set.Repetitions != nil && *set.Repetitions < 0) ||
+			(set.Weight != nil && (math.IsNaN(*set.Weight) || math.IsInf(*set.Weight, 0) || *set.Weight < 0 || *set.Weight > 999.99)) {
+			return core_errors.ErrInvalidPlannedSets
+		}
+	}
+	return nil
 }

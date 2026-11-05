@@ -16,6 +16,9 @@ definitions:
       name:
         example: barbell bench press
         type: string
+      title:
+        example: Жим штанги лёжа
+        type: string
     type: object
   internal_features_program_transport_http.CreateExerciseDTORequest:
     properties:
@@ -49,6 +52,22 @@ definitions:
   internal_features_program_transport_http.CreatePlannedSetDTORequest:
     properties:
       repetitions:
+        example: 10
+        type: integer
+      weight:
+        example: 40
+        type: number
+    type: object
+  internal_features_program_transport_http.PatchExerciseSetsDTORequest:
+    properties:
+      sets:
+        items:
+          $ref: '#/definitions/internal_features_program_transport_http.PatchPlannedSetDTORequest'
+        type: array
+    type: object
+  internal_features_program_transport_http.PatchPlannedSetDTORequest:
+    properties:
+      reps:
         example: 10
         type: integer
       weight:
@@ -641,6 +660,46 @@ paths:
       security:
       - BearerAuth: []
       summary: Удаление упражнения
+      tags:
+      - program
+    patch:
+      consumes:
+      - application/json
+      description: Атомарно заменяет список плановых подходов упражнения в тренировочном дне
+      parameters:
+      - description: ID записи упражнения в тренировочном дне
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Новый список плановых подходов
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_program_transport_http.PatchExerciseSetsDTORequest'
+      responses:
+        "204":
+          description: Плановые подходы обновлены
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Exercise not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Обновление плановых подходов упражнения
       tags:
       - program
   /exercises:

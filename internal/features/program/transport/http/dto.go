@@ -74,6 +74,15 @@ type CreatePlannedSetDTORequest struct {
 	Weight      *float64 `json:"weight"      example:"40"`
 }
 
+type PatchExerciseSetsDTORequest struct {
+	Sets []PatchPlannedSetDTORequest `json:"sets"`
+}
+
+type PatchPlannedSetDTORequest struct {
+	Reps   *int     `json:"reps"   example:"10"`
+	Weight *float64 `json:"weight" example:"40"`
+}
+
 type PlannedSetResponse struct {
 	SetNumber   int      `json:"set_number"   example:"1"`
 	Repetitions *int     `json:"repetitions"  example:"10"`
@@ -98,6 +107,7 @@ type MuscleGroupDTOResponse struct {
 type CatalogExerciseDTOResponse struct {
 	ID            int     `json:"id"              example:"1"`
 	Name          string  `json:"name"            example:"barbell bench press"`
+	Title         string  `json:"title"           example:"Жим штанги лёжа"`
 	MuscleGroupID int     `json:"muscle_group_id" example:"1"`
 	Description   *string `json:"description"`
 	ImagePath     *string `json:"image_path"      example:"/exercises/chest/barbell-bench-press"`
@@ -170,6 +180,7 @@ func ToCatalogExerciseResponse(exercises []core_domain.CatalogExercise) []Catalo
 		result = append(result, CatalogExerciseDTOResponse{
 			ID:            exercise.ID,
 			Name:          exercise.Name,
+			Title:         exercise.Title,
 			MuscleGroupID: exercise.MuscleGroupID,
 			Description:   exercise.Description,
 			ImagePath:     exercise.ImagePath,

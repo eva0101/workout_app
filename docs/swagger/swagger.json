@@ -163,6 +163,68 @@
                         }
                     }
                 }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Атомарно заменяет список плановых подходов упражнения в тренировочном дне",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "program"
+                ],
+                "summary": "Обновление плановых подходов упражнения",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID записи упражнения в тренировочном дне",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Новый список плановых подходов",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_program_transport_http.PatchExerciseSetsDTORequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Плановые подходы обновлены"
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Exercise not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
             }
         },
         "/days/{id}": {
@@ -1189,6 +1251,10 @@
                 "name": {
                     "type": "string",
                     "example": "barbell bench press"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Жим штанги лёжа"
                 }
             }
         },
@@ -1238,6 +1304,30 @@
             "type": "object",
             "properties": {
                 "repetitions": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "weight": {
+                    "type": "number",
+                    "example": 40
+                }
+            }
+        },
+        "internal_features_program_transport_http.PatchExerciseSetsDTORequest": {
+            "type": "object",
+            "properties": {
+                "sets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_features_program_transport_http.PatchPlannedSetDTORequest"
+                    }
+                }
+            }
+        },
+        "internal_features_program_transport_http.PatchPlannedSetDTORequest": {
+            "type": "object",
+            "properties": {
+                "reps": {
                     "type": "integer",
                     "example": 10
                 },

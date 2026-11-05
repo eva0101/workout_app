@@ -20,7 +20,7 @@ func (r *ProgramRepository) GetExercises(
 	rows, err := r.pool.Query(
 		ctx,
 		`
-		SELECT id, name, muscle_group_id, description, image_path
+		SELECT id, name, title, muscle_group_id, description, image_path
 		FROM workoutapp.exercise
 		WHERE $1::INT IS NULL OR muscle_group_id = $1
 		ORDER BY id;
@@ -43,6 +43,7 @@ func (r *ProgramRepository) GetExercises(
 		if err := rows.Scan(
 			&exercise.ID,
 			&exercise.Name,
+			&exercise.Title,
 			&exercise.MuscleGroupID,
 			&description,
 			&imagePath,

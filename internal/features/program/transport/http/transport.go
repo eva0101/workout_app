@@ -61,6 +61,13 @@ type ProgramService interface {
 		sets []core_domain.PlannedSet,
 	) (core_domain.Exercise, error)
 
+	PatchExerciseSets(
+		ctx context.Context,
+		userID uuid.UUID,
+		trainingDayExerciseID int,
+		sets []core_domain.PlannedSet,
+	) error
+
 	DeleteExercise(
 		ctx context.Context,
 		userID uuid.UUID,
@@ -145,6 +152,12 @@ func (h *ProgramHTTPHandler) Routes() []core_http_server.Route {
 			Method:  http.MethodPost,
 			Path:    "/days/{id}/exercises",
 			Handler: http.HandlerFunc(h.CreateExercise),
+			Auth:    true,
+		},
+		{
+			Method:  http.MethodPatch,
+			Path:    "/days/exercises/{id}",
+			Handler: http.HandlerFunc(h.PatchExerciseSets),
 			Auth:    true,
 		},
 		{
