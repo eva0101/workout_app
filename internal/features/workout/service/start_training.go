@@ -31,3 +31,27 @@ func (s *WorkoutService) StartTraining(
 
 	return startWorkout, nil
 }
+
+func (s *WorkoutService) StartScheduledTraining(
+	ctx context.Context,
+	userID uuid.UUID,
+	scheduleID int,
+) (core_domain.StartWorkout, error) {
+	startWorkout, err := s.workoutRepository.StartScheduledTraining(
+		ctx,
+		userID,
+		scheduleID,
+	)
+	if err != nil {
+		return core_domain.StartWorkout{}, err
+	}
+
+	s.log.Info(
+		"scheduled training started",
+		zap.Int("id", startWorkout.ID),
+		zap.Int("training_day_id", startWorkout.TrainingDayID),
+		zap.Int("schedule_id", scheduleID),
+	)
+
+	return startWorkout, nil
+}

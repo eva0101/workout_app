@@ -22,6 +22,18 @@ type WorkoutService interface {
 		dayID int,
 	) (core_domain.StartWorkout, error)
 
+	StartScheduledTraining(
+		ctx context.Context,
+		userID uuid.UUID,
+		scheduleID int,
+	) (core_domain.StartWorkout, error)
+
+	CompleteExercise(
+		ctx context.Context,
+		userID uuid.UUID,
+		workoutExerciseID int,
+	) (core_domain.WorkoutExerciseCompletion, error)
+
 	ExecuteSet(
 		ctx context.Context,
 		userID uuid.UUID,
@@ -70,6 +82,18 @@ func (h *WorkoutHTTPHandler) Routes() []core_http_server.Route {
 			Method:  http.MethodPost,
 			Path:    "/days/{id}/workouts",
 			Handler: http.HandlerFunc(h.StartTraining),
+			Auth:    true,
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/workouts/schedule/{id}/start",
+			Handler: http.HandlerFunc(h.StartScheduledTraining),
+			Auth:    true,
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/workouts/exercises/{id}/complete",
+			Handler: http.HandlerFunc(h.CompleteExercise),
 			Auth:    true,
 		},
 		{

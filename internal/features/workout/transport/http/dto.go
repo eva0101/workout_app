@@ -41,11 +41,12 @@ type StartWorkoutDTOResponse struct {
 }
 
 type WorkoutDTOResponse struct {
-	ID          int                       `json:"id" example:"1"`
-	Status      string                    `json:"status" example:"in_progress"`
-	StartedAt   time.Time                 `json:"started_at" example:"2026-10-15T14:36:25.742006+05:00"`
-	CompletedAt *time.Time                `json:"completed_at" example:"2026-10-15T15:36:25.742006+05:00"`
-	Exercises   []WorkoutExerciseResponse `json:"exercises"`
+	ID              int                       `json:"id" example:"1"`
+	TrainingDayName *string                   `json:"training_day_name" example:"День верхней части тела"`
+	Status          string                    `json:"status" example:"in_progress"`
+	StartedAt       time.Time                 `json:"started_at" example:"2026-10-15T14:36:25.742006+05:00"`
+	CompletedAt     *time.Time                `json:"completed_at" example:"2026-10-15T15:36:25.742006+05:00"`
+	Exercises       []WorkoutExerciseResponse `json:"exercises"`
 }
 
 type WorkoutExerciseResponse struct {
@@ -54,8 +55,14 @@ type WorkoutExerciseResponse struct {
 	Name        string                      `json:"name" example:"barbell bench press"`
 	Title       string                      `json:"title" example:"Жим штанги лёжа"`
 	Order       int                         `json:"order" example:"1"`
+	CompletedAt *time.Time                  `json:"completed_at" example:"2026-10-15T15:36:25.742006+05:00"`
 	PlannedSets []WorkoutPlannedSetResponse `json:"planned_sets"`
 	ActualSets  []WorkoutActualSetResponse  `json:"actual_sets"`
+}
+
+type CompleteWorkoutExerciseDTOResponse struct {
+	ID          int       `json:"id" example:"1"`
+	CompletedAt time.Time `json:"completed_at" example:"2026-10-15T15:36:25.742006+05:00"`
 }
 
 type WorkoutPlannedSetResponse struct {
@@ -83,11 +90,12 @@ type StatisticDTOResponse struct {
 
 func ToWorkoutResponse(workout core_domain.WorkoutDetails) WorkoutDTOResponse {
 	response := WorkoutDTOResponse{
-		ID:          workout.ID,
-		Status:      workout.Status,
-		StartedAt:   workout.StartedAt,
-		CompletedAt: workout.CompletedAt,
-		Exercises:   make([]WorkoutExerciseResponse, 0, len(workout.Exercises)),
+		ID:              workout.ID,
+		TrainingDayName: workout.TrainingDayName,
+		Status:          workout.Status,
+		StartedAt:       workout.StartedAt,
+		CompletedAt:     workout.CompletedAt,
+		Exercises:       make([]WorkoutExerciseResponse, 0, len(workout.Exercises)),
 	}
 	for _, exercise := range workout.Exercises {
 		item := WorkoutExerciseResponse{
@@ -96,6 +104,7 @@ func ToWorkoutResponse(workout core_domain.WorkoutDetails) WorkoutDTOResponse {
 			Name:        exercise.Name,
 			Title:       exercise.Title,
 			Order:       exercise.Order,
+			CompletedAt: exercise.CompletedAt,
 			PlannedSets: make([]WorkoutPlannedSetResponse, 0, len(exercise.PlannedSets)),
 			ActualSets:  make([]WorkoutActualSetResponse, 0, len(exercise.ActualSets)),
 		}

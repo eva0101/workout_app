@@ -111,6 +111,11 @@ var (
 		http.StatusNotFound,
 	)
 
+	ErrWorkoutExerciseAlreadyCompleted = NewAppError(
+		"cannot complete an exercise in a completed workout",
+		http.StatusConflict,
+	)
+
 	ErrWorkoutNotFound = NewAppError(
 		"there is no training with such ID.",
 		http.StatusNotFound,

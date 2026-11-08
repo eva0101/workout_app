@@ -20,6 +20,18 @@ type WorkoutRepository interface {
 		dayID int,
 	) (core_domain.StartWorkout, error)
 
+	StartScheduledTraining(
+		ctx context.Context,
+		userID uuid.UUID,
+		scheduleID int,
+	) (core_domain.StartWorkout, error)
+
+	CompleteExercise(
+		ctx context.Context,
+		userID uuid.UUID,
+		workoutExerciseID int,
+	) (core_domain.WorkoutExerciseCompletion, error)
+
 	ExecuteSet(
 		ctx context.Context,
 		userID uuid.UUID,

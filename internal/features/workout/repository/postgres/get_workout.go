@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 	core_domain "workout_app/internal/core/domain"
 	core_errors "workout_app/internal/core/errors"
 
@@ -14,11 +15,12 @@ import (
 )
 
 type workoutExerciseSnapshotJSON struct {
-	ID          int    `json:"id"`
-	ExerciseID  int    `json:"exercise_id"`
-	Name        string `json:"name"`
-	Title       string `json:"title"`
-	Order       int    `json:"order"`
+	ID          int        `json:"id"`
+	ExerciseID  int        `json:"exercise_id"`
+	Name        string     `json:"name"`
+	Title       string     `json:"title"`
+	Order       int        `json:"order"`
+	CompletedAt *time.Time `json:"completed_at"`
 	PlannedSets []struct {
 		ID          int      `json:"id"`
 		SetNumber   int      `json:"set_number"`
@@ -68,6 +70,7 @@ func (r *WorkoutRepository) getWorkout(
 	err := r.pool.QueryRow(ctx, `
 		SELECT
 			w.id,
+			w.training_day_name,
 			w.status,
 			w.begin_at,
 			w.completed_at,
@@ -79,6 +82,7 @@ func (r *WorkoutRepository) getWorkout(
 						'name', we.exercise_name,
 						'title', we.exercise_title,
 						'order', we.sort_order,
+						'completed_at', we.completed_at,
 						'planned_sets', COALESCE((
 							SELECT jsonb_agg(
 								jsonb_build_object(
@@ -120,6 +124,7 @@ func (r *WorkoutRepository) getWorkout(
 		GROUP BY w.id;
 	`, userID, workoutID, activeOnly).Scan(
 		&workout.ID,
+		&workout.TrainingDayName,
 		&workout.Status,
 		&workout.StartedAt,
 		&workout.CompletedAt,
@@ -147,6 +152,7 @@ func (r *WorkoutRepository) getWorkout(
 			Name:        exercise.Name,
 			Title:       exercise.Title,
 			Order:       exercise.Order,
+			CompletedAt: exercise.CompletedAt,
 			PlannedSets: make([]core_domain.WorkoutPlannedSet, 0, len(exercise.PlannedSets)),
 			ActualSets:  make([]core_domain.WorkoutActualSet, 0, len(exercise.ActualSets)),
 		}

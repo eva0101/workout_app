@@ -90,11 +90,12 @@ type Workout struct {
 }
 
 type WorkoutDetails struct {
-	ID          int
-	Status      string
-	StartedAt   time.Time
-	CompletedAt *time.Time
-	Exercises   []WorkoutExerciseSnapshot
+	ID              int
+	TrainingDayName *string
+	Status          string
+	StartedAt       time.Time
+	CompletedAt     *time.Time
+	Exercises       []WorkoutExerciseSnapshot
 }
 
 type WorkoutExerciseSnapshot struct {
@@ -103,8 +104,14 @@ type WorkoutExerciseSnapshot struct {
 	Name        string
 	Title       string
 	Order       int
+	CompletedAt *time.Time
 	PlannedSets []WorkoutPlannedSet
 	ActualSets  []WorkoutActualSet
+}
+
+type WorkoutExerciseCompletion struct {
+	ID          int
+	CompletedAt time.Time
 }
 
 type WorkoutPlannedSet struct {

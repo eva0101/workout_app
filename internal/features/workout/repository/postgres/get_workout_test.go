@@ -80,17 +80,19 @@ func TestGetWorkoutSnapshotIntegration(t *testing.T) {
 	var activeWorkoutID, completedWorkoutID int
 	completedAt := time.Now().UTC().Truncate(time.Microsecond)
 	if err := pool.QueryRow(ctx, `
-		INSERT INTO workoutapp.workout (user_id, training_day_id, status, begin_at)
-		VALUES ($1, $2, 'in_progress', NOW())
+		INSERT INTO workoutapp.workout (
+			user_id, training_day_id, training_day_name, status, begin_at
+		)
+		VALUES ($1, $2, NULL, 'in_progress', NOW())
 		RETURNING id
 	`, ownerID, dayID).Scan(&activeWorkoutID); err != nil {
 		t.Fatalf("create active workout: %v", err)
 	}
 	if err := pool.QueryRow(ctx, `
 		INSERT INTO workoutapp.workout (
-			user_id, training_day_id, status, begin_at, completed_at
+			user_id, training_day_id, training_day_name, status, begin_at, completed_at
 		)
-		VALUES ($1, $2, 'completed', NOW() - INTERVAL '1 hour', $3)
+		VALUES ($1, $2, 'Historical day name', 'completed', NOW() - INTERVAL '1 hour', $3)
 		RETURNING id
 	`, ownerID, dayID, completedAt).Scan(&completedWorkoutID); err != nil {
 		t.Fatalf("create completed workout: %v", err)
@@ -114,6 +116,11 @@ func TestGetWorkoutSnapshotIntegration(t *testing.T) {
 		`, completedWorkoutID, sourceID, catalogExerciseID, "snapshot-name", "Snapshot title", index+1).Scan(destination); err != nil {
 			t.Fatalf("create workout exercise snapshot: %v", err)
 		}
+	}
+	if _, err := pool.Exec(ctx, `
+		UPDATE workoutapp.workout_exercise SET completed_at = $2 WHERE id = $1
+	`, snapshotExerciseOne, completedAt); err != nil {
+		t.Fatalf("complete snapshot exercise: %v", err)
 	}
 	if _, err := pool.Exec(ctx, `
 		INSERT INTO workoutapp.workout_exercise_sets (
@@ -157,14 +164,16 @@ func TestGetWorkoutSnapshotIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GetWorkout() error = %v", err)
 	}
-	if workout.Status != "completed" || workout.CompletedAt == nil || !workout.CompletedAt.Equal(completedAt) {
+	if workout.Status != "completed" || workout.CompletedAt == nil || !workout.CompletedAt.Equal(completedAt) ||
+		workout.TrainingDayName == nil || *workout.TrainingDayName != "Historical day name" {
 		t.Fatalf("completed workout metadata is incorrect: %+v", workout)
 	}
 	if len(workout.Exercises) != 2 {
 		t.Fatalf("expected 2 snapshot exercises, got %d", len(workout.Exercises))
 	}
 	first := workout.Exercises[0]
-	if first.ID != snapshotExerciseOne || first.Name != "snapshot-name" || first.Title != "Snapshot title" || first.Order != 1 {
+	if first.ID != snapshotExerciseOne || first.Name != "snapshot-name" || first.Title != "Snapshot title" ||
+		first.Order != 1 || first.CompletedAt == nil || !first.CompletedAt.Equal(completedAt) {
 		t.Fatalf("snapshot exercise metadata is incorrect: %+v", first)
 	}
 	if len(first.PlannedSets) != 2 || len(first.ActualSets) != 2 {

@@ -993,6 +993,70 @@ const docTemplate = `{
                 }
             }
         },
+        "/workouts/exercises/{id}/complete": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Идемпотентно отмечает snapshot-упражнение завершённым в активной тренировке",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workout"
+                ],
+                "summary": "Завершить упражнение",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID упражнения в snapshot тренировки",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Упражнение завершено",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_workout_transport_http.CompleteWorkoutExerciseDTOResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Упражнение не найдено",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "409": {
+                        "description": "Тренировка уже завершена",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/workouts/exercises/{id}/sets": {
             "post": {
                 "security": [
@@ -1157,6 +1221,70 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Schedule not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/workouts/schedule/{id}/start": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Создаёт snapshot тренировки и удаляет запись расписания атомарно",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workout"
+                ],
+                "summary": "Запустить тренировку из расписания",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID записи расписания",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Тренировка запущена",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_workout_transport_http.StartWorkoutDTOResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Запись расписания не найдена",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "409": {
+                        "description": "Уже есть активная тренировка",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "type": "string"
                         }
@@ -1725,6 +1853,19 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_features_workout_transport_http.CompleteWorkoutExerciseDTOResponse": {
+            "type": "object",
+            "properties": {
+                "completed_at": {
+                    "type": "string",
+                    "example": "2026-10-15T15:36:25.742006+05:00"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
         "internal_features_workout_transport_http.ExecuteSetDTORequest": {
             "type": "object",
             "properties": {
@@ -1854,6 +1995,10 @@ const docTemplate = `{
                 "status": {
                     "type": "string",
                     "example": "in_progress"
+                },
+                "training_day_name": {
+                    "type": "string",
+                    "example": "День верхней части тела"
                 }
             }
         },
@@ -1865,6 +2010,10 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/internal_features_workout_transport_http.WorkoutActualSetResponse"
                     }
+                },
+                "completed_at": {
+                    "type": "string",
+                    "example": "2026-10-15T15:36:25.742006+05:00"
                 },
                 "exercise_id": {
                     "type": "integer",
