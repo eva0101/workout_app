@@ -51,30 +51,6 @@ func (r *ProgramRepository) DeleteTrainingDay(
 		return fmt.Errorf("lock training day: %w", err)
 	}
 
-	var hasWorkoutHistory bool
-	err = tx.QueryRow(
-		ctx,
-		`SELECT EXISTS (
-			SELECT 1
-			FROM workoutapp.workout
-			WHERE training_day_id = $1
-			UNION ALL
-			SELECT 1
-			FROM workoutapp.workout_set ws
-			JOIN workoutapp.training_day_exercises tde
-				ON tde.id = ws.training_day_exercises_id
-			WHERE tde.training_day_id = $1
-		);`,
-		trainingDayID,
-	).Scan(&hasWorkoutHistory)
-	if err != nil {
-		r.log.Error("failed to check training day workout history", zap.Error(err))
-		return fmt.Errorf("check workout history: %w", err)
-	}
-	if hasWorkoutHistory {
-		return core_errors.ErrTrainingDayHasWorkoutHistory
-	}
-
 	_, err = tx.Exec(
 		ctx,
 		`DELETE FROM workoutapp.training_days WHERE id = $1;`,

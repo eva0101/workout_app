@@ -85,6 +85,67 @@ export type ScheduledWorkout = {
   created_at?: string
 }
 
+export type ScheduledWorkoutWithDayName = ScheduledWorkout & {
+  training_day_name: string
+}
+
+export type Workout = {
+  id: number
+  training_day_name?: string | null
+  status: string
+  started_at: string
+  completed_at: string | null
+  exercises: WorkoutExercise[]
+}
+
+export type WorkoutExercise = {
+  id: number
+  exercise_id: number
+  name: string
+  title: string
+  order: number
+  completed_at: string | null
+  planned_sets: WorkoutPlannedSet[]
+  actual_sets: WorkoutActualSet[]
+}
+
+export type WorkoutPlannedSet = {
+  id: number
+  set_number: number
+  repetitions: number | null
+  weight: number | null
+}
+
+export type WorkoutActualSet = {
+  id: number
+  set_number: number
+  reps_done: number | null
+  weight: number | null
+}
+
+export type ExecutedWorkoutSet = {
+  workout_exercise_id: number
+  set_number: number
+  reps_done: number | null
+  weight: number | null
+}
+
+export type CompletedWorkoutExercise = {
+  id: number
+  completed_at: string
+}
+
+export type StartedWorkout = {
+  id?: number
+  ID?: number
+  training_day_id?: number
+  TrainingDayID?: number
+  status?: string
+  Status?: string
+  begin_at?: string
+  BeginAt?: string
+}
+
 export type ApiError = Error & {
   status?: number
 }
@@ -277,6 +338,68 @@ export async function createSchedule(
 export async function getSchedule(from: string, to: string): Promise<ScheduledWorkout[]> {
   const params = new URLSearchParams({ from, to })
   return apiRequest<ScheduledWorkout[]>(`/workouts/schedule?${params.toString()}`)
+}
+
+export async function getScheduleWithDayNames(
+  from: string,
+  to: string,
+): Promise<ScheduledWorkoutWithDayName[]> {
+  const scheduledWorkouts = await getSchedule(from, to)
+  if (scheduledWorkouts.length === 0) return []
+
+  const programs = await getPrograms()
+  const programDetails = await Promise.all(programs.map(({ id }) => getProgram(id)))
+  const trainingDayNames = new Map(
+    programDetails.flatMap((program) =>
+      (program.training_days ?? []).map((day) => [day.id, day.name] as const),
+    ),
+  )
+
+  return scheduledWorkouts.map((workout) => {
+    const trainingDayName = trainingDayNames.get(workout.training_day_id)
+    if (!trainingDayName) {
+      throw new Error(`Не удалось определить название тренировочного дня для записи №${workout.id}.`)
+    }
+    return { ...workout, training_day_name: trainingDayName }
+  })
+}
+
+export async function startScheduledWorkout(scheduleId: number): Promise<StartedWorkout> {
+  return apiRequest<StartedWorkout>(`/workouts/schedule/${scheduleId}/start`, {
+    method: 'POST',
+  })
+}
+
+export async function getActiveWorkout(): Promise<Workout> {
+  return apiRequest<Workout>('/workouts/active')
+}
+
+export async function getWorkout(id: number): Promise<Workout> {
+  return apiRequest<Workout>(`/workouts/${id}`)
+}
+
+export async function executeWorkoutSet(
+  workoutExerciseId: number,
+  repsDone: number,
+  weight: number | null,
+): Promise<ExecutedWorkoutSet> {
+  return apiRequest<ExecutedWorkoutSet>(`/workouts/exercises/${workoutExerciseId}/sets`, {
+    method: 'POST',
+    body: JSON.stringify({ reps_done: repsDone, weight }),
+  })
+}
+
+export async function completeWorkoutExercise(workoutExerciseId: number): Promise<CompletedWorkoutExercise> {
+  return apiRequest<CompletedWorkoutExercise>(`/workouts/exercises/${workoutExerciseId}/complete`, {
+    method: 'POST',
+  })
+}
+
+export async function completeWorkout(id: number, fatigueScore: number): Promise<void> {
+  await apiRequest<void>(`/workouts/${id}/complete`, {
+    method: 'POST',
+    body: JSON.stringify({ fatigue_score: fatigueScore }),
+  })
 }
 
 export async function deleteScheduledWorkout(id: number): Promise<void> {

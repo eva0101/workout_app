@@ -508,10 +508,10 @@ export default function ProgramsPage({
             </div>
           ) : dayDetails ? (
             <>
-              <div className="program-detail-heading">
+              <div className="program-detail-heading flex-wrap">
                 <div className="program-detail-icon"><Dumbbell size={23} /></div>
-                <div>
-                  <p className="eyebrow">{details?.name} · ДЕНЬ {dayDetails.day_number}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="eyebrow">{details?.name}</p>
                   <h2>{dayDetails.name}</h2>
                 </div>
               </div>

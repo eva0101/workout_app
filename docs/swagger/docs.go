@@ -485,7 +485,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Запускает начало тренировочного дня",
+                "description": "Создаёт тренировку и копирует в неё текущий план тренировочного дня",
                 "consumes": [
                     "application/json"
                 ],
@@ -950,6 +950,113 @@ const docTemplate = `{
                 }
             }
         },
+        "/workouts/active": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Возвращает активную тренировку пользователя со snapshot-упражнениями и подходами",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workout"
+                ],
+                "summary": "Получение активной тренировки",
+                "responses": {
+                    "200": {
+                        "description": "Активная тренировка",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_workout_transport_http.WorkoutDTOResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Активная тренировка не найдена",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/workouts/exercises/{id}/complete": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Идемпотентно отмечает snapshot-упражнение завершённым в активной тренировке",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workout"
+                ],
+                "summary": "Завершить упражнение",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID упражнения в snapshot тренировки",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Упражнение завершено",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_workout_transport_http.CompleteWorkoutExerciseDTOResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Упражнение не найдено",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "409": {
+                        "description": "Тренировка уже завершена",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/workouts/exercises/{id}/sets": {
             "post": {
                 "security": [
@@ -971,7 +1078,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "ID тренировочного дня с упражнением",
+                        "description": "ID упражнения в снимке активной тренировки",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1005,8 +1112,8 @@ const docTemplate = `{
                             "type": "string"
                         }
                     },
-                    "409": {
-                        "description": "Conflict",
+                    "404": {
+                        "description": "Workout or exercise not found",
                         "schema": {
                             "type": "string"
                         }
@@ -1121,6 +1228,70 @@ const docTemplate = `{
                 }
             }
         },
+        "/workouts/schedule/{id}/start": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Создаёт snapshot тренировки и удаляет запись расписания атомарно",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workout"
+                ],
+                "summary": "Запустить тренировку из расписания",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID записи расписания",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Тренировка запущена",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_workout_transport_http.StartWorkoutDTOResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Запись расписания не найдена",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "409": {
+                        "description": "Уже есть активная тренировка",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/workouts/statistics": {
             "get": {
                 "security": [
@@ -1151,6 +1322,64 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/workouts/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Возвращает тренировку пользователя со snapshot-упражнениями и подходами",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workout"
+                ],
+                "summary": "Получение тренировки",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID тренировки",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Тренировка",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_workout_transport_http.WorkoutDTOResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Тренировка не найдена",
                         "schema": {
                             "type": "string"
                         }
@@ -1319,30 +1548,6 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_features_program_transport_http.PatchExerciseSetsDTORequest": {
-            "type": "object",
-            "properties": {
-                "sets": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/internal_features_program_transport_http.PatchPlannedSetDTORequest"
-                    }
-                }
-            }
-        },
-        "internal_features_program_transport_http.PatchPlannedSetDTORequest": {
-            "type": "object",
-            "properties": {
-                "reps": {
-                    "type": "integer",
-                    "example": 10
-                },
-                "weight": {
-                    "type": "number",
-                    "example": 40
-                }
-            }
-        },
         "internal_features_program_transport_http.CreateProgramDTORequest": {
             "type": "object",
             "properties": {
@@ -1432,6 +1637,30 @@ const docTemplate = `{
                 "name": {
                     "type": "string",
                     "example": "new name"
+                }
+            }
+        },
+        "internal_features_program_transport_http.PatchExerciseSetsDTORequest": {
+            "type": "object",
+            "properties": {
+                "sets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_features_program_transport_http.PatchPlannedSetDTORequest"
+                    }
+                }
+            }
+        },
+        "internal_features_program_transport_http.PatchPlannedSetDTORequest": {
+            "type": "object",
+            "properties": {
+                "reps": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "weight": {
+                    "type": "number",
+                    "example": 40
                 }
             }
         },
@@ -1624,6 +1853,19 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_features_workout_transport_http.CompleteWorkoutExerciseDTOResponse": {
+            "type": "object",
+            "properties": {
+                "completed_at": {
+                    "type": "string",
+                    "example": "2026-10-15T15:36:25.742006+05:00"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
         "internal_features_workout_transport_http.ExecuteSetDTORequest": {
             "type": "object",
             "properties": {
@@ -1648,13 +1890,13 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 5
                 },
-                "training_day_exercises_id": {
-                    "type": "integer",
-                    "example": 1
-                },
                 "weight": {
                     "type": "number",
                     "example": 8
+                },
+                "workout_exercise_id": {
+                    "type": "integer",
+                    "example": 1
                 }
             }
         },
@@ -1705,6 +1947,120 @@ const docTemplate = `{
                 "total_volume": {
                     "type": "number",
                     "example": 160
+                }
+            }
+        },
+        "internal_features_workout_transport_http.WorkoutActualSetResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "reps_done": {
+                    "type": "integer",
+                    "example": 9
+                },
+                "set_number": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "weight": {
+                    "type": "number",
+                    "example": 37.5
+                }
+            }
+        },
+        "internal_features_workout_transport_http.WorkoutDTOResponse": {
+            "type": "object",
+            "properties": {
+                "completed_at": {
+                    "type": "string",
+                    "example": "2026-10-15T15:36:25.742006+05:00"
+                },
+                "exercises": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_features_workout_transport_http.WorkoutExerciseResponse"
+                    }
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "started_at": {
+                    "type": "string",
+                    "example": "2026-10-15T14:36:25.742006+05:00"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "in_progress"
+                },
+                "training_day_name": {
+                    "type": "string",
+                    "example": "День верхней части тела"
+                }
+            }
+        },
+        "internal_features_workout_transport_http.WorkoutExerciseResponse": {
+            "type": "object",
+            "properties": {
+                "actual_sets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_features_workout_transport_http.WorkoutActualSetResponse"
+                    }
+                },
+                "completed_at": {
+                    "type": "string",
+                    "example": "2026-10-15T15:36:25.742006+05:00"
+                },
+                "exercise_id": {
+                    "type": "integer",
+                    "example": 4
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "barbell bench press"
+                },
+                "order": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "planned_sets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_features_workout_transport_http.WorkoutPlannedSetResponse"
+                    }
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Жим штанги лёжа"
+                }
+            }
+        },
+        "internal_features_workout_transport_http.WorkoutPlannedSetResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "repetitions": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "set_number": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "weight": {
+                    "type": "number",
+                    "example": 40
                 }
             }
         },

@@ -58,22 +58,6 @@ definitions:
         example: 40
         type: number
     type: object
-  internal_features_program_transport_http.PatchExerciseSetsDTORequest:
-    properties:
-      sets:
-        items:
-          $ref: '#/definitions/internal_features_program_transport_http.PatchPlannedSetDTORequest'
-        type: array
-    type: object
-  internal_features_program_transport_http.PatchPlannedSetDTORequest:
-    properties:
-      reps:
-        example: 10
-        type: integer
-      weight:
-        example: 40
-        type: number
-    type: object
   internal_features_program_transport_http.CreateProgramDTORequest:
     properties:
       name:
@@ -138,6 +122,22 @@ definitions:
       name:
         example: new name
         type: string
+    type: object
+  internal_features_program_transport_http.PatchExerciseSetsDTORequest:
+    properties:
+      sets:
+        items:
+          $ref: '#/definitions/internal_features_program_transport_http.PatchPlannedSetDTORequest'
+        type: array
+    type: object
+  internal_features_program_transport_http.PatchPlannedSetDTORequest:
+    properties:
+      reps:
+        example: 10
+        type: integer
+      weight:
+        example: 40
+        type: number
     type: object
   internal_features_program_transport_http.PlannedSetResponse:
     properties:
@@ -270,6 +270,15 @@ definitions:
         example: 1
         type: integer
     type: object
+  internal_features_workout_transport_http.CompleteWorkoutExerciseDTOResponse:
+    properties:
+      completed_at:
+        example: "2026-10-15T15:36:25.742006+05:00"
+        type: string
+      id:
+        example: 1
+        type: integer
+    type: object
   internal_features_workout_transport_http.ExecuteSetDTORequest:
     properties:
       reps_done:
@@ -287,12 +296,12 @@ definitions:
       set_number:
         example: 5
         type: integer
-      training_day_exercises_id:
-        example: 1
-        type: integer
       weight:
         example: 8
         type: number
+      workout_exercise_id:
+        example: 1
+        type: integer
     type: object
   internal_features_workout_transport_http.StartWorkoutDTOResponse:
     properties:
@@ -328,6 +337,87 @@ definitions:
         type: integer
       total_volume:
         example: 160
+        type: number
+    type: object
+  internal_features_workout_transport_http.WorkoutActualSetResponse:
+    properties:
+      id:
+        example: 1
+        type: integer
+      reps_done:
+        example: 9
+        type: integer
+      set_number:
+        example: 1
+        type: integer
+      weight:
+        example: 37.5
+        type: number
+    type: object
+  internal_features_workout_transport_http.WorkoutDTOResponse:
+    properties:
+      completed_at:
+        example: "2026-10-15T15:36:25.742006+05:00"
+        type: string
+      exercises:
+        items:
+          $ref: '#/definitions/internal_features_workout_transport_http.WorkoutExerciseResponse'
+        type: array
+      id:
+        example: 1
+        type: integer
+      started_at:
+        example: "2026-10-15T14:36:25.742006+05:00"
+        type: string
+      status:
+        example: in_progress
+        type: string
+      training_day_name:
+        example: День верхней части тела
+        type: string
+    type: object
+  internal_features_workout_transport_http.WorkoutExerciseResponse:
+    properties:
+      actual_sets:
+        items:
+          $ref: '#/definitions/internal_features_workout_transport_http.WorkoutActualSetResponse'
+        type: array
+      completed_at:
+        example: "2026-10-15T15:36:25.742006+05:00"
+        type: string
+      exercise_id:
+        example: 4
+        type: integer
+      id:
+        example: 1
+        type: integer
+      name:
+        example: barbell bench press
+        type: string
+      order:
+        example: 1
+        type: integer
+      planned_sets:
+        items:
+          $ref: '#/definitions/internal_features_workout_transport_http.WorkoutPlannedSetResponse'
+        type: array
+      title:
+        example: Жим штанги лёжа
+        type: string
+    type: object
+  internal_features_workout_transport_http.WorkoutPlannedSetResponse:
+    properties:
+      id:
+        example: 1
+        type: integer
+      repetitions:
+        example: 10
+        type: integer
+      set_number:
+        example: 1
+        type: integer
+      weight:
+        example: 40
         type: number
     type: object
   workout_app_internal_core_dto.DTOAuthorizationUserRequest:
@@ -594,7 +684,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: Запускает начало тренировочного дня
+      description: Создаёт тренировку и копирует в неё текущий план тренировочного
+        дня
       parameters:
       - description: ID тренировочного дня
         in: path
@@ -665,7 +756,8 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Атомарно заменяет список плановых подходов упражнения в тренировочном дне
+      description: Атомарно заменяет список плановых подходов упражнения в тренировочном
+        дне
       parameters:
       - description: ID записи упражнения в тренировочном дне
         in: path
@@ -963,6 +1055,43 @@ paths:
       summary: Создание тренировочного дня
       tags:
       - program
+  /workouts/{id}:
+    get:
+      description: Возвращает тренировку пользователя со snapshot-упражнениями и подходами
+      parameters:
+      - description: ID тренировки
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Тренировка
+          schema:
+            $ref: '#/definitions/internal_features_workout_transport_http.WorkoutDTOResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Тренировка не найдена
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Получение тренировки
+      tags:
+      - workout
   /workouts/{id}/complete:
     post:
       consumes:
@@ -1010,6 +1139,76 @@ paths:
       summary: Завершить тренировку
       tags:
       - workout
+  /workouts/active:
+    get:
+      description: Возвращает активную тренировку пользователя со snapshot-упражнениями
+        и подходами
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Активная тренировка
+          schema:
+            $ref: '#/definitions/internal_features_workout_transport_http.WorkoutDTOResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Активная тренировка не найдена
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Получение активной тренировки
+      tags:
+      - workout
+  /workouts/exercises/{id}/complete:
+    post:
+      description: Идемпотентно отмечает snapshot-упражнение завершённым в активной
+        тренировке
+      parameters:
+      - description: ID упражнения в snapshot тренировки
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Упражнение завершено
+          schema:
+            $ref: '#/definitions/internal_features_workout_transport_http.CompleteWorkoutExerciseDTOResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Упражнение не найдено
+          schema:
+            type: string
+        "409":
+          description: Тренировка уже завершена
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Завершить упражнение
+      tags:
+      - workout
   /workouts/exercises/{id}/sets:
     post:
       consumes:
@@ -1018,7 +1217,7 @@ paths:
         Отмечает выполнение подхода, записывая кол-во повторений и вес
         ***Кол-во повторений и вес необязательны, для выполнения подхода***
       parameters:
-      - description: ID тренировочного дня с упражнением
+      - description: ID упражнения в снимке активной тренировки
         in: path
         name: id
         required: true
@@ -1044,8 +1243,8 @@ paths:
           description: Unauthorized
           schema:
             type: string
-        "409":
-          description: Conflict
+        "404":
+          description: Workout or exercise not found
           schema:
             type: string
         "500":
@@ -1121,6 +1320,47 @@ paths:
       summary: Delete a scheduled workout
       tags:
       - schedule
+  /workouts/schedule/{id}/start:
+    post:
+      description: Создаёт snapshot тренировки и удаляет запись расписания атомарно
+      parameters:
+      - description: ID записи расписания
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Тренировка запущена
+          schema:
+            $ref: '#/definitions/internal_features_workout_transport_http.StartWorkoutDTOResponse'
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Запись расписания не найдена
+          schema:
+            type: string
+        "409":
+          description: Уже есть активная тренировка
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Запустить тренировку из расписания
+      tags:
+      - workout
   /workouts/statistics:
     get:
       description: Получение общей статистики пользователя

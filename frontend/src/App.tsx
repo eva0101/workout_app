@@ -1,14 +1,24 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { Dumbbell } from 'lucide-react'
 import DashboardHeader from './components/DashboardHeader'
-import NextWorkoutCard from './components/NextWorkoutCard'
-import RecentWorkouts from './components/RecentWorkouts'
 import Sidebar from './components/Sidebar'
-import WeeklyStats from './components/WeeklyStats'
-import WorkoutDialog from './components/WorkoutDialog'
-import { recentWorkouts } from './data'
-import { getStoredToken, removeStoredToken, UNAUTHORIZED_EVENT } from './lib/api'
 import AuthPage from './pages/AuthPage'
+import DashboardPage from './pages/DashboardPage'
 import ProgramsPage from './pages/ProgramsPage'
+import WorkoutPage from './pages/WorkoutPage'
+import {
+  completeWorkout,
+  completeWorkoutExercise,
+  executeWorkoutSet,
+  getActiveWorkout,
+  getStoredToken,
+  getWorkout,
+  removeStoredToken,
+  startScheduledWorkout,
+  UNAUTHORIZED_EVENT,
+  type ApiError,
+  type Workout,
+} from './lib/api'
 
 type Theme = 'light' | 'dark'
 
@@ -35,13 +45,22 @@ function readAppLocation(): AppLocation {
   const isProgramRoute = params.get('section') === 'programs' && Number.isInteger(programId) && programId > 0
 
   return {
-    activeItem: params.get('section') === 'programs' ? 'Программы' : 'Обзор',
+    activeItem: params.get('section') === 'programs'
+      ? 'Программы'
+      : params.get('section') === 'workouts'
+        ? 'Тренировки'
+        : 'Обзор',
     programId: isProgramRoute ? programId : null,
     dayId: isProgramRoute && Number.isInteger(dayId) && dayId > 0 ? dayId : null,
   }
 }
 
-function writeAppLocation(programId: number | null, dayId: number | null, keepProgramsSection = false) {
+function writeAppLocation(
+  programId: number | null,
+  dayId: number | null,
+  keepProgramsSection = false,
+  keepWorkoutsSection = false,
+) {
   const url = new URL(window.location.href)
   url.search = ''
 
@@ -51,19 +70,103 @@ function writeAppLocation(programId: number | null, dayId: number | null, keepPr
     if (dayId !== null) url.searchParams.set('day', String(dayId))
   } else if (keepProgramsSection) {
     url.searchParams.set('section', 'programs')
+  } else if (keepWorkoutsSection) {
+    url.searchParams.set('section', 'workouts')
   }
 
   window.history.pushState(null, '', url)
 }
 
+function getErrorMessage(error: unknown): string {
+  const status = typeof error === 'object' && error !== null && 'status' in error
+    ? (error as ApiError).status
+    : undefined
+  if (status === 401) return 'Сессия завершена. Войдите в аккаунт снова.'
+  if (status === 404) return 'Тренировка не найдена или больше не активна.'
+  if (status === 409) return 'У вас уже есть активная тренировка. Продолжите её вместо запуска новой.'
+  if (error instanceof TypeError) return 'Не удалось связаться с сервером. Проверьте подключение.'
+  if (error instanceof Error && error.message) return error.message
+  return 'Не удалось выполнить запрос. Попробуйте ещё раз.'
+}
+
+function getWorkoutID(started: { id?: number; ID?: number }): number | null {
+  const id = started.id ?? started.ID
+  return Number.isInteger(id) && Number(id) > 0 ? Number(id) : null
+}
+
 export default function App() {
   const [initialLocation] = useState(readAppLocation)
   const [activeItem, setActiveItem] = useState(initialLocation.activeItem)
-  const [dialogOpen, setDialogOpen] = useState(false)
   const [theme, setTheme] = useState<Theme>(getInitialTheme)
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(getIsAuthenticated)
   const [selectedProgramId, setSelectedProgramId] = useState<number | null>(initialLocation.programId)
   const [selectedDayId, setSelectedDayId] = useState<number | null>(initialLocation.dayId)
+  const [activeWorkout, setActiveWorkout] = useState<Workout | null>(null)
+  const [currentWorkout, setCurrentWorkout] = useState<Workout | null>(null)
+  const [currentWorkoutTitle, setCurrentWorkoutTitle] = useState('')
+  const [isActiveWorkoutLoading, setIsActiveWorkoutLoading] = useState(false)
+  const [isStartingWorkout, setIsStartingWorkout] = useState(false)
+  const [isSavingSet, setIsSavingSet] = useState(false)
+  const [isCompletingExercise, setIsCompletingExercise] = useState(false)
+  const [isCompletingWorkout, setIsCompletingWorkout] = useState(false)
+  const [workoutError, setWorkoutError] = useState('')
+  const [activeWorkoutError, setActiveWorkoutError] = useState('')
+
+  const refreshActiveWorkout = useCallback(async () => {
+    setIsActiveWorkoutLoading(true)
+    setActiveWorkoutError('')
+    try {
+      setActiveWorkout(await getActiveWorkout())
+    } catch (error) {
+      if (typeof error === 'object' && error !== null && 'status' in error && (error as ApiError).status === 404) {
+        setActiveWorkout(null)
+      } else {
+        setActiveWorkoutError(getErrorMessage(error))
+      }
+    } finally {
+      setIsActiveWorkoutLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isAuthenticated) return
+
+    let cancelled = false
+    setIsActiveWorkoutLoading(true)
+    setActiveWorkoutError('')
+    getActiveWorkout()
+      .then(async (workout) => {
+        if (cancelled) return
+        setActiveWorkout(workout)
+        if (initialLocation.activeItem === 'Тренировки') {
+          try {
+            const details = await getWorkout(workout.id)
+            if (!cancelled) {
+              setCurrentWorkout(details)
+              setCurrentWorkoutTitle(details.training_day_name || `Тренировка #${details.id}`)
+            }
+          } catch (error) {
+            if (!cancelled) setActiveWorkoutError(getErrorMessage(error))
+          }
+        }
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return
+        if (typeof error === 'object' && error !== null && 'status' in error && (error as ApiError).status === 404) {
+          setActiveWorkout(null)
+          if (initialLocation.activeItem === 'Тренировки') setActiveItem('Обзор')
+        } else {
+          setActiveWorkoutError(getErrorMessage(error))
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setIsActiveWorkoutLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [initialLocation.activeItem, isAuthenticated])
 
   useEffect(() => {
     function handleUnauthorized() {
@@ -71,6 +174,8 @@ export default function App() {
       setActiveItem('Обзор')
       setSelectedProgramId(null)
       setSelectedDayId(null)
+      setActiveWorkout(null)
+      setCurrentWorkout(null)
     }
 
     window.addEventListener(UNAUTHORIZED_EVENT, handleUnauthorized)
@@ -83,11 +188,15 @@ export default function App() {
       setActiveItem(location.activeItem)
       setSelectedProgramId(location.programId)
       setSelectedDayId(location.dayId)
+      if (location.activeItem === 'Тренировки' && activeWorkout) {
+        setCurrentWorkout(activeWorkout)
+        setCurrentWorkoutTitle(activeWorkout.training_day_name || `Тренировка #${activeWorkout.id}`)
+      }
     }
 
     window.addEventListener('popstate', handlePopState)
     return () => window.removeEventListener('popstate', handlePopState)
-  }, [])
+  }, [activeWorkout])
 
   function toggleTheme() {
     const nextTheme = theme === 'light' ? 'dark' : 'light'
@@ -101,7 +210,131 @@ export default function App() {
     setActiveItem('Обзор')
     setSelectedProgramId(null)
     setSelectedDayId(null)
+    setActiveWorkout(null)
+    setCurrentWorkout(null)
     writeAppLocation(null, null)
+  }
+
+  async function openWorkout(workoutId: number, title?: string) {
+    setWorkoutError('')
+    try {
+      const workout = await getWorkout(workoutId)
+      setCurrentWorkout(workout)
+      setActiveWorkout(workout.status === 'in_progress' ? workout : activeWorkout)
+      setCurrentWorkoutTitle(title || workout.training_day_name || `Тренировка #${workout.id}`)
+      setActiveItem('Тренировки')
+      setSelectedProgramId(null)
+      setSelectedDayId(null)
+      writeAppLocation(null, null, false, true)
+    } catch (error) {
+      setWorkoutError(getErrorMessage(error))
+    }
+  }
+
+  async function handleStartScheduledWorkout(scheduleId: number, title: string) {
+    if (activeWorkout) {
+      throw new Error('У вас уже есть активная тренировка. Продолжите её вместо запуска новой.')
+    }
+    if (isActiveWorkoutLoading) {
+      throw new Error('Проверяем состояние активной тренировки. Попробуйте ещё раз через мгновение.')
+    }
+    if (isStartingWorkout) {
+      throw new Error('Запуск тренировки уже выполняется.')
+    }
+    setWorkoutError('')
+    setIsStartingWorkout(true)
+    try {
+      const started = await startScheduledWorkout(scheduleId)
+      const workoutId = getWorkoutID(started)
+      if (workoutId === null) {
+        throw new Error('Backend вернул некорректный ID созданной тренировки.')
+      }
+      await openWorkout(workoutId, title)
+      await refreshActiveWorkout()
+    } catch (error) {
+      if (typeof error === 'object' && error !== null && 'status' in error && (error as ApiError).status === 409) {
+        await refreshActiveWorkout()
+      }
+      throw error
+    } finally {
+      setIsStartingWorkout(false)
+    }
+  }
+
+  async function handleAddSet(workoutExerciseId: number, repsDone: number, weight: number | null): Promise<boolean> {
+    if (!currentWorkout || isSavingSet) return false
+    setWorkoutError('')
+    setIsSavingSet(true)
+    try {
+      await executeWorkoutSet(workoutExerciseId, repsDone, weight)
+      try {
+        const refreshed = await getWorkout(currentWorkout.id)
+        setCurrentWorkout(refreshed)
+        setActiveWorkout(refreshed)
+      } catch (error) {
+        setWorkoutError(`Подход сохранён, но не удалось обновить тренировку. ${getErrorMessage(error)}`)
+      }
+      return true
+    } catch (error) {
+      setWorkoutError(getErrorMessage(error))
+      return false
+    } finally {
+      setIsSavingSet(false)
+    }
+  }
+
+  async function handleCompleteExercise(workoutExerciseId: number): Promise<boolean> {
+    if (!currentWorkout || isCompletingExercise) return false
+    setWorkoutError('')
+    setIsCompletingExercise(true)
+    try {
+      const completion = await completeWorkoutExercise(workoutExerciseId)
+      const completedAt = completion.completed_at
+      const updateWorkout = (workout: Workout | null) => workout
+        ? {
+          ...workout,
+          exercises: workout.exercises.map((exercise) => (
+            exercise.id === completion.id ? { ...exercise, completed_at: completedAt } : exercise
+          )),
+        }
+        : null
+      const updatedCurrent = updateWorkout(currentWorkout)
+      setCurrentWorkout(updatedCurrent)
+      setActiveWorkout(updateWorkout(activeWorkout))
+      try {
+        const refreshed = await getWorkout(currentWorkout.id)
+        setCurrentWorkout(refreshed)
+        setActiveWorkout(refreshed)
+      } catch (error) {
+        setWorkoutError(`Упражнение завершено, но не удалось обновить список. ${getErrorMessage(error)}`)
+      }
+      return true
+    } catch (error) {
+      setWorkoutError(getErrorMessage(error))
+      return false
+    } finally {
+      setIsCompletingExercise(false)
+    }
+  }
+
+  async function handleCompleteWorkout(fatigueScore: number) {
+    if (!currentWorkout || isCompletingWorkout) return
+    setWorkoutError('')
+    setIsCompletingWorkout(true)
+    try {
+      await completeWorkout(currentWorkout.id, fatigueScore)
+      setCurrentWorkout(null)
+      setActiveWorkout(null)
+      setCurrentWorkoutTitle('')
+      setActiveItem('Обзор')
+      setSelectedProgramId(null)
+      setSelectedDayId(null)
+      writeAppLocation(null, null)
+    } catch (error) {
+      setWorkoutError(getErrorMessage(error))
+    } finally {
+      setIsCompletingWorkout(false)
+    }
   }
 
   if (!isAuthenticated) {
@@ -116,7 +349,12 @@ export default function App() {
           setActiveItem(item)
           setSelectedProgramId(null)
           setSelectedDayId(null)
-          writeAppLocation(null, null, item === 'Программы')
+          setWorkoutError('')
+          if (item === 'Тренировки' && activeWorkout) {
+            void openWorkout(activeWorkout.id)
+          } else {
+            writeAppLocation(null, null, item === 'Программы', item === 'Тренировки')
+          }
         }}
       />
       <main className="main-content">
@@ -125,6 +363,11 @@ export default function App() {
           onToggleTheme={toggleTheme}
           onLogout={handleLogout}
         />
+        {workoutError && !(activeItem === 'Тренировки' && currentWorkout) && (
+          <div className="program-alert mx-5 mt-4 sm:mx-8 lg:mx-12" role="alert">
+            {workoutError}
+          </div>
+        )}
         {activeItem === 'Программы' ? (
           <ProgramsPage
             selectedProgramId={selectedProgramId}
@@ -149,87 +392,61 @@ export default function App() {
               if (selectedProgramId !== null) writeAppLocation(selectedProgramId, null)
             }}
           />
-        ) : <div className="dashboard-content">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">ТВОЙ ПЛАН</p>
-              <h2 className="mt-1 text-[17px] font-semibold tracking-[-0.035em] text-ink">
-                Неделя в движении
-              </h2>
-            </div>
-            <button className="week-select" type="button">
-              Эта неделя <span aria-hidden="true">⌄</span>
-            </button>
-          </div>
-
-          <div className="dashboard-grid">
-            <div className="flex flex-col gap-4">
-              <NextWorkoutCard onStart={() => setDialogOpen(true)} />
-              <WeeklyStats />
-            </div>
-            <aside className="weekly-panel">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-[11px] font-medium text-muted">Твой ритм</p>
-                  <h3 className="mt-1 text-sm font-semibold text-ink">План на неделю</h3>
-                </div>
-                <span className="streak-badge">75%</span>
+        ) : activeItem === 'Тренировки' ? (
+          currentWorkout ? (
+            <WorkoutPage
+              workout={currentWorkout}
+              title={currentWorkoutTitle}
+              isSavingSet={isSavingSet}
+              isCompletingExercise={isCompletingExercise}
+              isCompleting={isCompletingWorkout}
+              error={workoutError}
+              onAddSet={handleAddSet}
+              onCompleteExercise={handleCompleteExercise}
+              onComplete={(fatigueScore) => void handleCompleteWorkout(fatigueScore)}
+              onBack={() => {
+                setActiveItem('Обзор')
+                setWorkoutError('')
+                writeAppLocation(null, null)
+              }}
+            />
+          ) : (
+            <section className="dashboard-content">
+              <div className="panel-card empty-state">
+                <div className="empty-icon"><Dumbbell size={21} /></div>
+                <h2 className="mt-3 text-sm font-semibold text-ink">Нет активной тренировки</h2>
+                <p className="mt-1 text-xs text-muted">Выберите запланированную тренировку в обзоре или календаре.</p>
+                {activeWorkoutError && <p className="program-alert mt-4" role="alert">{activeWorkoutError}</p>}
+                <button
+                  className="program-secondary-button mt-4"
+                  type="button"
+                  onClick={() => {
+                    setActiveItem('Обзор')
+                    writeAppLocation(null, null)
+                  }}
+                >
+                  К обзору
+                </button>
               </div>
-              <div className="mt-5">
-                <div className="flex items-end justify-between">
-                  <span className="text-[29px] font-semibold leading-none tracking-[-0.06em] text-ink">
-                    3<span className="ml-1 text-sm font-medium tracking-normal text-subtle">/ 4</span>
-                  </span>
-                  <span className="pb-0.5 text-[10px] font-medium text-muted">цель выполнена</span>
-                </div>
-                <div className="progress-track mt-4 h-1.5 overflow-hidden rounded-full">
-                  <div className="h-full w-3/4 rounded-full bg-accent" />
-                </div>
-              </div>
-              <div className="mt-5 border-t border-line pt-4">
-                <WorkoutProgress />
-              </div>
-              <div className="encouragement mt-4 rounded-xl px-3.5 py-3">
-                <p className="text-xs font-semibold text-ink">Ещё одна — и цель твоя</p>
-                <p className="mt-1 text-[11px] leading-4 text-muted">
-                  Ты стабильно двигаешься вперёд. Так держать!
-                </p>
-              </div>
-            </aside>
-          </div>
-
-          <div className="mt-6">
-            <RecentWorkouts workouts={recentWorkouts} />
-          </div>
-          <p className="demo-note">Демонстрационные данные · история тренировок не сохраняется</p>
-        </div>}
+            </section>
+          )
+        ) : (
+          <DashboardPage
+            activeWorkout={activeWorkout}
+            activeWorkoutError={activeWorkoutError}
+            isActiveWorkoutLoading={isActiveWorkoutLoading}
+            isStartingWorkout={isStartingWorkout}
+            onStartScheduledWorkout={handleStartScheduledWorkout}
+            onResumeWorkout={() => activeWorkout && void openWorkout(activeWorkout.id)}
+            onOpenPrograms={() => {
+              setActiveItem('Программы')
+              setSelectedProgramId(null)
+              setSelectedDayId(null)
+              writeAppLocation(null, null, true)
+            }}
+          />
+        )}
       </main>
-      <WorkoutDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
-    </div>
-  )
-}
-
-function WorkoutProgress() {
-  const days = [
-    { label: 'ПН', completed: true },
-    { label: 'ВТ', completed: true },
-    { label: 'СР', completed: false },
-    { label: 'ЧТ', completed: true },
-    { label: 'ПТ', completed: false },
-    { label: 'СБ', completed: false },
-    { label: 'ВС', completed: false },
-  ]
-
-  return (
-    <div className="flex justify-between">
-      {days.map(({ label, completed }) => (
-        <div className="flex flex-col items-center gap-2" key={label}>
-          <span className={`day-marker ${completed ? 'day-marker-done' : ''}`}>
-            {completed ? '✓' : ''}
-          </span>
-          <span className="text-[9px] font-semibold text-subtle">{label}</span>
-        </div>
-      ))}
     </div>
   )
 }

@@ -65,16 +65,19 @@ export default function Sidebar({ activeItem, onNavigate }: SidebarProps) {
         <div className="sidebar-bottom">
           <div className="plan-card">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-ink">Твоя цель</span>
+              <span className="text-xs font-semibold text-ink">Календарь занятий</span>
               <Target size={16} className="text-accent" />
             </div>
             <p className="mt-2 text-xs leading-5 text-muted">
-              4 тренировки в неделю — ты уже на верном пути.
+              Запланируй тренировочные дни в календаре и занимайся в удобном ритме.
             </p>
-            <div className="sidebar-progress-track mt-3 h-1.5 overflow-hidden rounded-full">
-              <div className="h-full w-3/4 rounded-full bg-accent" />
-            </div>
-            <p className="mt-2 text-[11px] font-medium text-muted">3 из 4 на этой неделе</p>
+            <button
+              className="text-button mt-2"
+              type="button"
+              onClick={() => onNavigate('Программы')}
+            >
+              Мои программы
+            </button>
           </div>
           <button className="nav-link mt-3" type="button" onClick={() => onNavigate('Настройки')}>
             <Settings2 size={18} strokeWidth={1.8} />

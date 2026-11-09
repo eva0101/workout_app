@@ -22,10 +22,22 @@ type WorkoutService interface {
 		dayID int,
 	) (core_domain.StartWorkout, error)
 
+	StartScheduledTraining(
+		ctx context.Context,
+		userID uuid.UUID,
+		scheduleID int,
+	) (core_domain.StartWorkout, error)
+
+	CompleteExercise(
+		ctx context.Context,
+		userID uuid.UUID,
+		workoutExerciseID int,
+	) (core_domain.WorkoutExerciseCompletion, error)
+
 	ExecuteSet(
 		ctx context.Context,
 		userID uuid.UUID,
-		trainingDayExerciseID int,
+		workoutExerciseID int,
 		repsDone *int,
 		weight *float64,
 	) (core_domain.WorkoutSet, error)
@@ -41,6 +53,17 @@ type WorkoutService interface {
 		ctx context.Context,
 		userID uuid.UUID,
 	) ([]core_domain.Statistic, error)
+
+	GetActiveWorkout(
+		ctx context.Context,
+		userID uuid.UUID,
+	) (core_domain.WorkoutDetails, error)
+
+	GetWorkout(
+		ctx context.Context,
+		userID uuid.UUID,
+		workoutID int,
+	) (core_domain.WorkoutDetails, error)
 }
 
 func NewWorkoutHTTPHandler(
@@ -63,6 +86,18 @@ func (h *WorkoutHTTPHandler) Routes() []core_http_server.Route {
 		},
 		{
 			Method:  http.MethodPost,
+			Path:    "/workouts/schedule/{id}/start",
+			Handler: http.HandlerFunc(h.StartScheduledTraining),
+			Auth:    true,
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/workouts/exercises/{id}/complete",
+			Handler: http.HandlerFunc(h.CompleteExercise),
+			Auth:    true,
+		},
+		{
+			Method:  http.MethodPost,
 			Path:    "/workouts/exercises/{id}/sets",
 			Handler: http.HandlerFunc(h.ExecuteSet),
 			Auth:    true,
@@ -71,6 +106,18 @@ func (h *WorkoutHTTPHandler) Routes() []core_http_server.Route {
 			Method:  http.MethodPost,
 			Path:    "/workouts/{id}/complete",
 			Handler: http.HandlerFunc(h.CompleteTraining),
+			Auth:    true,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/workouts/active",
+			Handler: http.HandlerFunc(h.GetActiveWorkout),
+			Auth:    true,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/workouts/{id}",
+			Handler: http.HandlerFunc(h.GetWorkout),
 			Auth:    true,
 		},
 		{
