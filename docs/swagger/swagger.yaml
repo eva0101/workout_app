@@ -405,6 +405,39 @@ definitions:
         example: Жим штанги лёжа
         type: string
     type: object
+  internal_features_workout_transport_http.WorkoutHistoryDTOResponse:
+    properties:
+      actual_reps:
+        example: 72
+        type: integer
+      completed_at:
+        example: "2026-10-15T15:36:25Z"
+        type: string
+      completed_sets:
+        example: 8
+        type: integer
+      completion_percent:
+        example: 90
+        type: integer
+      duration_seconds:
+        example: 3600
+        type: integer
+      id:
+        example: 12
+        type: integer
+      planned_reps:
+        example: 80
+        type: integer
+      started_at:
+        example: "2026-10-15T14:36:25Z"
+        type: string
+      total_weight:
+        example: 1250
+        type: number
+      training_day_name:
+        example: День верхней части тела
+        type: string
+    type: object
   internal_features_workout_transport_http.WorkoutPlannedSetResponse:
     properties:
       id:
@@ -1254,6 +1287,46 @@ paths:
       security:
       - BearerAuth: []
       summary: Выполнить подход
+      tags:
+      - workout
+  /workouts/history:
+    get:
+      description: Возвращает завершённые тренировки пользователя, рассчитанные по
+        снимку тренировки
+      parameters:
+      - description: Максимальное количество тренировок (по умолчанию 20, максимум
+          100)
+        in: query
+        name: limit
+        type: integer
+      - description: Количество пропускаемых тренировок
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: История тренировок
+          schema:
+            items:
+              $ref: '#/definitions/internal_features_workout_transport_http.WorkoutHistoryDTOResponse'
+            type: array
+        "400":
+          description: Некорректные параметры пагинации
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Получение истории завершённых тренировок
       tags:
       - workout
   /workouts/schedule:

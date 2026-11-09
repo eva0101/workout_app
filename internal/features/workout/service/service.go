@@ -52,6 +52,13 @@ type WorkoutRepository interface {
 		userID uuid.UUID,
 	) ([]core_domain.Statistic, error)
 
+	GetWorkoutHistory(
+		ctx context.Context,
+		userID uuid.UUID,
+		limit int,
+		offset int,
+	) ([]core_domain.WorkoutHistoryItem, error)
+
 	GetActiveWorkout(
 		ctx context.Context,
 		userID uuid.UUID,

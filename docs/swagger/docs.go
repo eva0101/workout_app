@@ -1127,6 +1127,66 @@ const docTemplate = `{
                 }
             }
         },
+        "/workouts/history": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Возвращает завершённые тренировки пользователя, рассчитанные по снимку тренировки",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workout"
+                ],
+                "summary": "Получение истории завершённых тренировок",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Максимальное количество тренировок (по умолчанию 20, максимум 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Количество пропускаемых тренировок",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "История тренировок",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/internal_features_workout_transport_http.WorkoutHistoryDTOResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректные параметры пагинации",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/workouts/schedule": {
             "get": {
                 "security": [
@@ -2040,6 +2100,51 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "example": "Жим штанги лёжа"
+                }
+            }
+        },
+        "internal_features_workout_transport_http.WorkoutHistoryDTOResponse": {
+            "type": "object",
+            "properties": {
+                "actual_reps": {
+                    "type": "integer",
+                    "example": 72
+                },
+                "completed_at": {
+                    "type": "string",
+                    "example": "2026-10-15T15:36:25Z"
+                },
+                "completed_sets": {
+                    "type": "integer",
+                    "example": 8
+                },
+                "completion_percent": {
+                    "type": "integer",
+                    "example": 90
+                },
+                "duration_seconds": {
+                    "type": "integer",
+                    "example": 3600
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "planned_reps": {
+                    "type": "integer",
+                    "example": 80
+                },
+                "started_at": {
+                    "type": "string",
+                    "example": "2026-10-15T14:36:25Z"
+                },
+                "total_weight": {
+                    "type": "number",
+                    "example": 1250
+                },
+                "training_day_name": {
+                    "type": "string",
+                    "example": "День верхней части тела"
                 }
             }
         },

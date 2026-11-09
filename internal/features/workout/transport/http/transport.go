@@ -54,6 +54,13 @@ type WorkoutService interface {
 		userID uuid.UUID,
 	) ([]core_domain.Statistic, error)
 
+	GetWorkoutHistory(
+		ctx context.Context,
+		userID uuid.UUID,
+		limit int,
+		offset int,
+	) ([]core_domain.WorkoutHistoryItem, error)
+
 	GetActiveWorkout(
 		ctx context.Context,
 		userID uuid.UUID,
@@ -106,6 +113,12 @@ func (h *WorkoutHTTPHandler) Routes() []core_http_server.Route {
 			Method:  http.MethodPost,
 			Path:    "/workouts/{id}/complete",
 			Handler: http.HandlerFunc(h.CompleteTraining),
+			Auth:    true,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/workouts/history",
+			Handler: http.HandlerFunc(h.GetWorkoutHistory),
 			Auth:    true,
 		},
 		{
