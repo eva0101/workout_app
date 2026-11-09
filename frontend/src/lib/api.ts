@@ -104,6 +104,7 @@ export type WorkoutExercise = {
   name: string
   title: string
   order: number
+  completed_at: string | null
   planned_sets: WorkoutPlannedSet[]
   actual_sets: WorkoutActualSet[]
 }
@@ -127,6 +128,11 @@ export type ExecutedWorkoutSet = {
   set_number: number
   reps_done: number | null
   weight: number | null
+}
+
+export type CompletedWorkoutExercise = {
+  id: number
+  completed_at: string
 }
 
 export type StartedWorkout = {
@@ -380,6 +386,12 @@ export async function executeWorkoutSet(
   return apiRequest<ExecutedWorkoutSet>(`/workouts/exercises/${workoutExerciseId}/sets`, {
     method: 'POST',
     body: JSON.stringify({ reps_done: repsDone, weight }),
+  })
+}
+
+export async function completeWorkoutExercise(workoutExerciseId: number): Promise<CompletedWorkoutExercise> {
+  return apiRequest<CompletedWorkoutExercise>(`/workouts/exercises/${workoutExerciseId}/complete`, {
+    method: 'POST',
   })
 }
 

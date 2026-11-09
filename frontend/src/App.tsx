@@ -8,6 +8,7 @@ import ProgramsPage from './pages/ProgramsPage'
 import WorkoutPage from './pages/WorkoutPage'
 import {
   completeWorkout,
+  completeWorkoutExercise,
   executeWorkoutSet,
   getActiveWorkout,
   getStoredToken,
@@ -106,6 +107,7 @@ export default function App() {
   const [isActiveWorkoutLoading, setIsActiveWorkoutLoading] = useState(false)
   const [isStartingWorkout, setIsStartingWorkout] = useState(false)
   const [isSavingSet, setIsSavingSet] = useState(false)
+  const [isCompletingExercise, setIsCompletingExercise] = useState(false)
   const [isCompletingWorkout, setIsCompletingWorkout] = useState(false)
   const [workoutError, setWorkoutError] = useState('')
   const [activeWorkoutError, setActiveWorkoutError] = useState('')
@@ -281,6 +283,40 @@ export default function App() {
     }
   }
 
+  async function handleCompleteExercise(workoutExerciseId: number): Promise<boolean> {
+    if (!currentWorkout || isCompletingExercise) return false
+    setWorkoutError('')
+    setIsCompletingExercise(true)
+    try {
+      const completion = await completeWorkoutExercise(workoutExerciseId)
+      const completedAt = completion.completed_at
+      const updateWorkout = (workout: Workout | null) => workout
+        ? {
+          ...workout,
+          exercises: workout.exercises.map((exercise) => (
+            exercise.id === completion.id ? { ...exercise, completed_at: completedAt } : exercise
+          )),
+        }
+        : null
+      const updatedCurrent = updateWorkout(currentWorkout)
+      setCurrentWorkout(updatedCurrent)
+      setActiveWorkout(updateWorkout(activeWorkout))
+      try {
+        const refreshed = await getWorkout(currentWorkout.id)
+        setCurrentWorkout(refreshed)
+        setActiveWorkout(refreshed)
+      } catch (error) {
+        setWorkoutError(`Упражнение завершено, но не удалось обновить список. ${getErrorMessage(error)}`)
+      }
+      return true
+    } catch (error) {
+      setWorkoutError(getErrorMessage(error))
+      return false
+    } finally {
+      setIsCompletingExercise(false)
+    }
+  }
+
   async function handleCompleteWorkout(fatigueScore: number) {
     if (!currentWorkout || isCompletingWorkout) return
     setWorkoutError('')
@@ -362,9 +398,11 @@ export default function App() {
               workout={currentWorkout}
               title={currentWorkoutTitle}
               isSavingSet={isSavingSet}
+              isCompletingExercise={isCompletingExercise}
               isCompleting={isCompletingWorkout}
               error={workoutError}
               onAddSet={handleAddSet}
+              onCompleteExercise={handleCompleteExercise}
               onComplete={(fatigueScore) => void handleCompleteWorkout(fatigueScore)}
               onBack={() => {
                 setActiveItem('Обзор')

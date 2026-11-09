@@ -138,7 +138,7 @@ export default function DashboardPage({
               {activeWorkout
                 ? activeWorkout.training_day_name || 'Продолжите тренировку'
                 : todayWorkouts.length > 0
-                  ? 'Пора двигаться'
+                  ? 'Время тренировки'
                   : 'План на сегодня'}
             </h2>
 
@@ -193,21 +193,23 @@ export default function DashboardPage({
             ) : (
               <>
                 <p className="dashboard-hero-description">
-                  {scheduledWorkouts.length > 0
-                    ? 'На сегодня ничего не запланировано. Вы можете посмотреть другие даты.'
-                    : 'В календаре пока нет тренировок. Сначала запланируйте занятие, чтобы оно появилось здесь.'}
+                  {upcomingWorkouts.length > 0
+                    ? 'На сегодня тренировка не запланирована. Выберите будущую тренировку, чтобы начать её сегодня.'
+                    : 'В календаре нет предстоящих тренировок. Сначала запланируйте занятие, чтобы оно появилось здесь.'}
                 </p>
-                <div className="mt-5 flex flex-wrap gap-2">
-                  <button className="program-secondary-button" type="button" onClick={() => openCalendar()}>
-                    <CalendarDays size={15} />
-                    {scheduledWorkouts.length > 0 ? 'Выбрать другую тренировку' : 'Открыть календарь'}
+                {upcomingWorkouts.length > 0 ? (
+                  <button
+                    className="program-secondary-button mt-5"
+                    type="button"
+                    onClick={() => openCalendar(upcomingWorkouts[0].scheduled_date)}
+                  >
+                    <CalendarDays size={15} /> Выбрать тренировку
                   </button>
-                  {scheduledWorkouts.length === 0 && (
-                    <button className="text-button" type="button" onClick={onOpenPrograms}>
-                      Перейти к программам <ChevronRight size={15} />
-                    </button>
-                  )}
-                </div>
+                ) : (
+                  <button className="program-primary-button mt-5" type="button" onClick={onOpenPrograms}>
+                    Начать планирование <ChevronRight size={15} />
+                  </button>
+                )}
               </>
             )}
             {startError && <p className="program-alert mt-4" role="alert">{startError}</p>}
