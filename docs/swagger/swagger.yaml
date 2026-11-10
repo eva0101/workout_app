@@ -422,6 +422,9 @@ definitions:
       duration_seconds:
         example: 3600
         type: integer
+      fatigue_score:
+        example: 7
+        type: integer
       id:
         example: 12
         type: integer

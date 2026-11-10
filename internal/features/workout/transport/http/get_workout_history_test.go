@@ -35,7 +35,7 @@ func (s *workoutHistoryServiceStub) GetWorkoutHistory(
 
 func TestGetWorkoutHistoryUsesDefaultPaginationAndReturnsItems(t *testing.T) {
 	name := "Snapshot day"
-	percent := 80
+	percent, fatigueScore := 80, 7
 	startedAt := time.Date(2026, 10, 15, 14, 0, 0, 0, time.UTC)
 	completedAt := startedAt.Add(100 * time.Second)
 	userID := uuid.New()
@@ -43,7 +43,7 @@ func TestGetWorkoutHistoryUsesDefaultPaginationAndReturnsItems(t *testing.T) {
 		history: []core_domain.WorkoutHistoryItem{{
 			ID: 9, TrainingDayName: &name, StartedAt: startedAt, CompletedAt: completedAt,
 			DurationSeconds: 100, CompletedSets: 2, TotalWeight: 160,
-			ActualReps: 12, PlannedReps: 15, CompletionPercent: &percent,
+			ActualReps: 12, PlannedReps: 15, CompletionPercent: &percent, FatigueScore: &fatigueScore,
 		}},
 	}
 	handler := NewWorkoutHTTPHandler(service, nil)
@@ -68,8 +68,24 @@ func TestGetWorkoutHistoryUsesDefaultPaginationAndReturnsItems(t *testing.T) {
 	}
 	if len(body) != 1 || body[0].ID != 9 || body[0].TrainingDayName == nil ||
 		*body[0].TrainingDayName != name || body[0].CompletionPercent == nil ||
-		*body[0].CompletionPercent != 80 || body[0].DurationSeconds != 100 {
+		*body[0].CompletionPercent != 80 || body[0].DurationSeconds != 100 ||
+		body[0].FatigueScore == nil || *body[0].FatigueScore != 7 {
 		t.Fatalf("unexpected workout history response: %+v", body)
+	}
+}
+
+func TestWorkoutHistoryResponseSerializesMissingFatigueScoreAsNull(t *testing.T) {
+	response, err := json.Marshal(ToWorkoutHistoryResponse(core_domain.WorkoutHistoryItem{ID: 9}))
+	if err != nil {
+		t.Fatalf("marshal workout history response: %v", err)
+	}
+
+	var body map[string]json.RawMessage
+	if err := json.Unmarshal(response, &body); err != nil {
+		t.Fatalf("decode workout history response: %v", err)
+	}
+	if value, ok := body["fatigue_score"]; !ok || string(value) != "null" {
+		t.Fatalf("fatigue_score = %s, want null", value)
 	}
 }
 

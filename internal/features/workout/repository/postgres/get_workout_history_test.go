@@ -53,24 +53,26 @@ func TestGetWorkoutHistoryIntegration(t *testing.T) {
 		weight *float64
 	}
 	type scenario struct {
-		name        string
-		plannedReps []*int
-		actualSets  []actualSet
-		wantSets    int64
-		wantWeight  float64
-		wantActual  int64
-		wantPlanned int64
-		wantPercent *int
+		name         string
+		plannedReps  []*int
+		actualSets   []actualSet
+		wantSets     int64
+		wantWeight   float64
+		wantActual   int64
+		wantPlanned  int64
+		wantPercent  *int
+		fatigueScore *int
 	}
 	intPointer := func(value int) *int { return &value }
 	floatPointer := func(value float64) *float64 { return &value }
-	eighty, oneHundred, zero := 80, 100, 0
+	eighty, oneHundred, zero, goodFeeling := 80, 100, 0, 7
 	scenarios := []scenario{
 		{
 			name:        "ordinary",
 			plannedReps: []*int{intPointer(10), intPointer(5), nil},
 			actualSets:  []actualSet{{reps: intPointer(8), weight: floatPointer(20)}, {reps: intPointer(4)}},
 			wantSets:    2, wantWeight: 160, wantActual: 12, wantPlanned: 15, wantPercent: &eighty,
+			fatigueScore: &goodFeeling,
 		},
 		{
 			name:        "over-completion",
@@ -101,11 +103,11 @@ func TestGetWorkoutHistoryIntegration(t *testing.T) {
 		var workoutID, snapshotExerciseID int
 		if err := pool.QueryRow(ctx, `
 			INSERT INTO workoutapp.workout (
-				user_id, training_day_id, training_day_name, status, begin_at, completed_at
+				user_id, training_day_id, training_day_name, status, begin_at, completed_at, fatigue_score
 			)
-			VALUES ($1, $2, $3, 'completed', $4, $5)
+			VALUES ($1, $2, $3, 'completed', $4, $5, $6)
 			RETURNING id
-		`, ownerID, dayID, "Snapshot "+item.name, startedAt, completedAt).Scan(&workoutID); err != nil {
+		`, ownerID, dayID, "Snapshot "+item.name, startedAt, completedAt, item.fatigueScore).Scan(&workoutID); err != nil {
 			t.Fatalf("create %s workout: %v", item.name, err)
 		}
 		if err := pool.QueryRow(ctx, `
@@ -150,9 +152,9 @@ func TestGetWorkoutHistoryIntegration(t *testing.T) {
 	foreignDayID := createWorkoutTestDay(t, ctx, pool, otherUserID, "Foreign day")
 	if _, err := pool.Exec(ctx, `
 		INSERT INTO workoutapp.workout (
-			user_id, training_day_id, training_day_name, status, begin_at, completed_at
+			user_id, training_day_id, training_day_name, status, begin_at, completed_at, fatigue_score
 		)
-		VALUES ($1, $2, 'Foreign snapshot', 'completed', $3, $4)
+		VALUES ($1, $2, 'Foreign snapshot', 'completed', $3, $4, 5)
 	`, otherUserID, foreignDayID, base, base.Add(time.Minute)); err != nil {
 		t.Fatalf("create foreign workout: %v", err)
 	}
@@ -205,6 +207,13 @@ func TestGetWorkoutHistoryIntegration(t *testing.T) {
 			t.Errorf("workout %q completion percent = %d, want %d",
 				want.name, *item.CompletionPercent, *want.wantPercent)
 		}
+		if (item.FatigueScore == nil) != (want.fatigueScore == nil) {
+			t.Errorf("workout %q fatigue score = %v, want %v",
+				want.name, item.FatigueScore, want.fatigueScore)
+		} else if want.fatigueScore != nil && *item.FatigueScore != *want.fatigueScore {
+			t.Errorf("workout %q fatigue score = %d, want %d",
+				want.name, *item.FatigueScore, *want.fatigueScore)
+		}
 	}
 
 	page, err := repository.GetWorkoutHistory(ctx, ownerID, 2, 1)
@@ -221,5 +230,11 @@ func TestGetWorkoutHistoryIntegration(t *testing.T) {
 	}
 	if len(foreignHistory) != 1 {
 		t.Fatalf("other user should only see their workout, got %d items", len(foreignHistory))
+	}
+	if foreignHistory[0].TrainingDayName == nil ||
+		*foreignHistory[0].TrainingDayName != "Foreign snapshot" ||
+		foreignHistory[0].FatigueScore == nil ||
+		*foreignHistory[0].FatigueScore != 5 {
+		t.Fatalf("other user received unexpected workout history: %+v", foreignHistory[0])
 	}
 }

@@ -99,6 +99,7 @@ type WorkoutHistoryDTOResponse struct {
 	ActualReps        int64     `json:"actual_reps" example:"72"`
 	PlannedReps       int64     `json:"planned_reps" example:"80"`
 	CompletionPercent *int      `json:"completion_percent" example:"90"`
+	FatigueScore      *int      `json:"fatigue_score" example:"7"`
 }
 
 func ToWorkoutResponse(workout core_domain.WorkoutDetails) WorkoutDTOResponse {
@@ -154,5 +155,6 @@ func ToWorkoutHistoryResponse(item core_domain.WorkoutHistoryItem) WorkoutHistor
 		ActualReps:        item.ActualReps,
 		PlannedReps:       item.PlannedReps,
 		CompletionPercent: item.CompletionPercent,
+		FatigueScore:      item.FatigueScore,
 	}
 }

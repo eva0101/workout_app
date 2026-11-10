@@ -18,4 +18,5 @@ type WorkoutHistoryItem struct {
 	ActualReps        int64
 	PlannedReps       int64
 	CompletionPercent *int
+	FatigueScore      *int
 }

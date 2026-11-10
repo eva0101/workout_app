@@ -21,6 +21,7 @@ import {
 type WorkoutPageProps = {
   workout: Workout
   title: string
+  readOnly: boolean
   isSavingSet: boolean
   isCompletingExercise: boolean
   isCompleting: boolean
@@ -93,6 +94,7 @@ function ExerciseImage({
 export default function WorkoutPage({
   workout,
   title,
+  readOnly,
   isSavingSet,
   isCompletingExercise,
   isCompleting,
@@ -160,6 +162,7 @@ export default function WorkoutPage({
 
   async function submitSet(event: FormEvent<HTMLFormElement>, exerciseId: number) {
     event.preventDefault()
+    if (readOnly) return
     const input = inputs[exerciseId] ?? { reps: '', weight: '' }
     const repsDone = Number(input.reps)
     const weight = input.weight.trim() === '' ? null : Number(input.weight)
@@ -173,7 +176,7 @@ export default function WorkoutPage({
   }
 
   function requestFinishWorkout() {
-    if (isCompleting || isSavingSet || isCompletingExercise) return
+    if (readOnly || isCompleting || isSavingSet || isCompletingExercise) return
     if (unfinishedCount > 0) {
       setIsFinishConfirmationOpen(true)
       return
@@ -182,7 +185,7 @@ export default function WorkoutPage({
   }
 
   function finishDespiteUncompletedExercises() {
-    if (isCompleting) return
+    if (readOnly || isCompleting) return
     setIsFinishConfirmationOpen(false)
     onComplete(fatigueScore)
   }
@@ -274,7 +277,7 @@ export default function WorkoutPage({
                   </ol>
                 )}
               </div>
-              {!isCompleted && (
+              {!readOnly && !isCompleted && (
                 <form className="session-set-form" onSubmit={(event) => void submitSet(event, selectedExercise.id)}>
                   <label>
                     <span>Повторения</span>
@@ -343,7 +346,7 @@ export default function WorkoutPage({
             </section>
 
             <div className="session-detail-actions">
-              {isCompleted ? (
+              {readOnly || isCompleted ? (
                 <button className="program-secondary-button" type="button" onClick={() => setSelectedExerciseId(null)}>
                   <CheckCircle2 size={16} /> К списку упражнений
                 </button>
@@ -362,9 +365,11 @@ export default function WorkoutPage({
                   Завершить упражнение
                 </button>
               )}
-              <button className="program-secondary-button" type="button" onClick={() => setSelectedExerciseId(null)}>
-                Вернуться к списку
-              </button>
+              {!readOnly && (
+                <button className="program-secondary-button" type="button" onClick={() => setSelectedExerciseId(null)}>
+                  Вернуться к списку
+                </button>
+              )}
             </div>
           </div>
 
@@ -422,17 +427,18 @@ export default function WorkoutPage({
   return (
     <section className="page-content workout-session-page">
       <button className="program-back-button" type="button" onClick={onBack}>
-        <ArrowLeft size={16} /> К обзору
+        <ArrowLeft size={16} /> {readOnly ? 'К истории тренировок' : 'К обзору'}
       </button>
 
       <header className="session-overview-header">
         <div>
-          <p className="eyebrow">ВАША ТРЕНИРОВКА</p>
+          <p className="eyebrow">{readOnly ? 'ИСТОРИЯ ТРЕНИРОВОК' : 'ВАША ТРЕНИРОВКА'}</p>
           <h1>{title || workout.training_day_name || `Тренировка #${workout.id}`}</h1>
           <div className="session-started-at">
-            <span>Начата</span>
-            <time dateTime={workout.started_at}>
-              {new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }).format(new Date(workout.started_at))}
+            <span>{readOnly ? 'Завершена' : 'Начата'}</span>
+            <time dateTime={readOnly ? workout.completed_at ?? workout.started_at : workout.started_at}>
+              {new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                .format(new Date(readOnly ? workout.completed_at ?? workout.started_at : workout.started_at))}
             </time>
           </div>
         </div>
@@ -465,7 +471,7 @@ export default function WorkoutPage({
       <section className="session-progress-card panel-card" aria-label="Прогресс тренировки">
         <div className="session-progress-copy">
           <div>
-            <p className="eyebrow">ПРОГРЕСС ТРЕНИРОВКИ</p>
+            <p className="eyebrow">{readOnly ? 'ВЫПОЛНЕНИЕ УПРАЖНЕНИЙ' : 'ПРОГРЕСС ТРЕНИРОВКИ'}</p>
             <h2>{completedCount} из {workout.exercises.length} упражнений</h2>
           </div>
           <span>{progress}%</span>
@@ -485,10 +491,10 @@ export default function WorkoutPage({
       <section className="session-exercises-section" aria-labelledby="session-exercises-title">
         <div className="session-list-heading">
           <div>
-            <p className="eyebrow">ПЛАН ТРЕНИРОВКИ</p>
+            <p className="eyebrow">{readOnly ? 'СОСТАВ ТРЕНИРОВКИ' : 'ПЛАН ТРЕНИРОВКИ'}</p>
             <h2 id="session-exercises-title">Упражнения <span>{workout.exercises.length}</span></h2>
           </div>
-          <p>Выберите любое упражнение, чтобы начать</p>
+          <p>{readOnly ? 'Выберите упражнение, чтобы посмотреть подходы' : 'Выберите любое упражнение, чтобы начать'}</p>
         </div>
 
         {workout.exercises.length === 0 ? (
@@ -504,7 +510,7 @@ export default function WorkoutPage({
         )}
       </section>
 
-      <section className="session-finish-card panel-card">
+      {!readOnly && <section className="session-finish-card panel-card">
         <div className="session-finish-copy">
           <span className="session-finish-icon"><Trophy size={19} /></span>
           <div>
@@ -538,9 +544,9 @@ export default function WorkoutPage({
           {isCompleting ? <LoaderCircle className="spin" size={16} /> : <Check size={16} />}
           Завершить тренировку
         </button>
-      </section>
+      </section>}
 
-      {isFinishConfirmationOpen && (
+      {!readOnly && isFinishConfirmationOpen && (
         <div
           className="program-modal-backdrop session-confirmation-backdrop"
           onClick={(event) => {

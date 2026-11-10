@@ -33,7 +33,8 @@ func (r *workoutHistoryRepositoryStub) GetWorkoutHistory(
 
 func TestGetWorkoutHistoryPassesUserAndPagination(t *testing.T) {
 	userID := uuid.New()
-	expected := []core_domain.WorkoutHistoryItem{{ID: 17}}
+	fatigueScore := 8
+	expected := []core_domain.WorkoutHistoryItem{{ID: 17, FatigueScore: &fatigueScore}}
 	repository := &workoutHistoryRepositoryStub{history: expected}
 	service := &WorkoutService{workoutRepository: repository}
 
@@ -41,7 +42,8 @@ func TestGetWorkoutHistoryPassesUserAndPagination(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GetWorkoutHistory() error = %v", err)
 	}
-	if len(got) != 1 || got[0].ID != expected[0].ID {
+	if len(got) != 1 || got[0].ID != expected[0].ID ||
+		got[0].FatigueScore == nil || *got[0].FatigueScore != fatigueScore {
 		t.Fatalf("GetWorkoutHistory() = %+v, want %+v", got, expected)
 	}
 	if repository.requestedUser != userID || repository.requestedLimit != 15 || repository.requestedOffset != 30 {

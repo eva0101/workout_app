@@ -98,6 +98,20 @@ export type Workout = {
   exercises: WorkoutExercise[]
 }
 
+export type WorkoutHistoryItem = {
+  id: number
+  training_day_name: string | null
+  started_at: string
+  completed_at: string
+  duration_seconds: number
+  completed_sets: number
+  total_weight: number
+  actual_reps: number
+  planned_reps: number
+  completion_percent: number | null
+  fatigue_score?: number | null
+}
+
 export type WorkoutExercise = {
   id: number
   exercise_id: number
@@ -372,6 +386,14 @@ export async function startScheduledWorkout(scheduleId: number): Promise<Started
 
 export async function getActiveWorkout(): Promise<Workout> {
   return apiRequest<Workout>('/workouts/active')
+}
+
+export async function getWorkoutHistory(
+  limit = 20,
+  offset = 0,
+): Promise<WorkoutHistoryItem[]> {
+  const params = new URLSearchParams({ limit: String(limit), offset: String(offset) })
+  return apiRequest<WorkoutHistoryItem[]>(`/workouts/history?${params.toString()}`)
 }
 
 export async function getWorkout(id: number): Promise<Workout> {

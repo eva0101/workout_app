@@ -49,6 +49,7 @@ func (r *WorkoutRepository) GetWorkoutHistory(
 		SELECT
 			w.id,
 			w.training_day_name,
+			w.fatigue_score,
 			w.begin_at,
 			w.completed_at,
 			FLOOR(EXTRACT(EPOCH FROM (w.completed_at - w.begin_at)))::BIGINT,
@@ -79,10 +80,11 @@ func (r *WorkoutRepository) GetWorkoutHistory(
 
 	for rows.Next() {
 		var item core_domain.WorkoutHistoryItem
-		var completionPercent pgtype.Int4
+		var completionPercent, fatigueScore pgtype.Int4
 		if err := rows.Scan(
 			&item.ID,
 			&item.TrainingDayName,
+			&fatigueScore,
 			&item.StartedAt,
 			&item.CompletedAt,
 			&item.DurationSeconds,
@@ -98,6 +100,10 @@ func (r *WorkoutRepository) GetWorkoutHistory(
 		if completionPercent.Valid {
 			percent := int(completionPercent.Int32)
 			item.CompletionPercent = &percent
+		}
+		if fatigueScore.Valid {
+			score := int(fatigueScore.Int32)
+			item.FatigueScore = &score
 		}
 		history = append(history, item)
 	}

@@ -2126,6 +2126,10 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 3600
                 },
+                "fatigue_score": {
+                    "type": "integer",
+                    "example": 7
+                },
                 "id": {
                     "type": "integer",
                     "example": 12
