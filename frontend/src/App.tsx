@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Dumbbell } from 'lucide-react'
 import DashboardHeader from './components/DashboardHeader'
 import Sidebar from './components/Sidebar'
 import AuthPage from './pages/AuthPage'
 import DashboardPage from './pages/DashboardPage'
 import ProgramsPage from './pages/ProgramsPage'
+import WorkoutHistoryPage from './pages/WorkoutHistoryPage'
 import WorkoutPage from './pages/WorkoutPage'
 import {
   completeWorkout,
@@ -135,26 +135,13 @@ export default function App() {
     setIsActiveWorkoutLoading(true)
     setActiveWorkoutError('')
     getActiveWorkout()
-      .then(async (workout) => {
-        if (cancelled) return
-        setActiveWorkout(workout)
-        if (initialLocation.activeItem === 'Тренировки') {
-          try {
-            const details = await getWorkout(workout.id)
-            if (!cancelled) {
-              setCurrentWorkout(details)
-              setCurrentWorkoutTitle(details.training_day_name || `Тренировка #${details.id}`)
-            }
-          } catch (error) {
-            if (!cancelled) setActiveWorkoutError(getErrorMessage(error))
-          }
-        }
+      .then((workout) => {
+        if (!cancelled) setActiveWorkout(workout)
       })
       .catch((error: unknown) => {
         if (cancelled) return
         if (typeof error === 'object' && error !== null && 'status' in error && (error as ApiError).status === 404) {
           setActiveWorkout(null)
-          if (initialLocation.activeItem === 'Тренировки') setActiveItem('Обзор')
         } else {
           setActiveWorkoutError(getErrorMessage(error))
         }
@@ -166,7 +153,7 @@ export default function App() {
     return () => {
       cancelled = true
     }
-  }, [initialLocation.activeItem, isAuthenticated])
+  }, [isAuthenticated])
 
   useEffect(() => {
     function handleUnauthorized() {
@@ -188,15 +175,15 @@ export default function App() {
       setActiveItem(location.activeItem)
       setSelectedProgramId(location.programId)
       setSelectedDayId(location.dayId)
-      if (location.activeItem === 'Тренировки' && activeWorkout) {
-        setCurrentWorkout(activeWorkout)
-        setCurrentWorkoutTitle(activeWorkout.training_day_name || `Тренировка #${activeWorkout.id}`)
+      if (location.activeItem === 'Тренировки') {
+        setCurrentWorkout(null)
+        setCurrentWorkoutTitle('')
       }
     }
 
     window.addEventListener('popstate', handlePopState)
     return () => window.removeEventListener('popstate', handlePopState)
-  }, [activeWorkout])
+  }, [])
 
   function toggleTheme() {
     const nextTheme = theme === 'light' ? 'dark' : 'light'
@@ -349,12 +336,11 @@ export default function App() {
           setActiveItem(item)
           setSelectedProgramId(null)
           setSelectedDayId(null)
+          setCurrentWorkout(null)
+          setCurrentWorkoutTitle('')
           setWorkoutError('')
-          if (item === 'Тренировки' && activeWorkout) {
-            void openWorkout(activeWorkout.id)
-          } else {
-            writeAppLocation(null, null, item === 'Программы', item === 'Тренировки')
-          }
+          if (item === 'Тренировки') void refreshActiveWorkout()
+          writeAppLocation(null, null, item === 'Программы', item === 'Тренировки')
         }}
       />
       <main className="main-content">
@@ -397,6 +383,7 @@ export default function App() {
             <WorkoutPage
               workout={currentWorkout}
               title={currentWorkoutTitle}
+              readOnly={currentWorkout.status === 'completed'}
               isSavingSet={isSavingSet}
               isCompletingExercise={isCompletingExercise}
               isCompleting={isCompletingWorkout}
@@ -405,30 +392,31 @@ export default function App() {
               onCompleteExercise={handleCompleteExercise}
               onComplete={(fatigueScore) => void handleCompleteWorkout(fatigueScore)}
               onBack={() => {
-                setActiveItem('Обзор')
+                if (currentWorkout.status === 'completed') {
+                  setCurrentWorkout(null)
+                  setCurrentWorkoutTitle('')
+                } else {
+                  setActiveItem('Обзор')
+                  writeAppLocation(null, null)
+                }
                 setWorkoutError('')
-                writeAppLocation(null, null)
               }}
             />
           ) : (
-            <section className="dashboard-content">
-              <div className="panel-card empty-state">
-                <div className="empty-icon"><Dumbbell size={21} /></div>
-                <h2 className="mt-3 text-sm font-semibold text-ink">Нет активной тренировки</h2>
-                <p className="mt-1 text-xs text-muted">Выберите запланированную тренировку в обзоре или календаре.</p>
-                {activeWorkoutError && <p className="program-alert mt-4" role="alert">{activeWorkoutError}</p>}
-                <button
-                  className="program-secondary-button mt-4"
-                  type="button"
-                  onClick={() => {
-                    setActiveItem('Обзор')
-                    writeAppLocation(null, null)
-                  }}
-                >
-                  К обзору
-                </button>
-              </div>
-            </section>
+            <WorkoutHistoryPage
+              activeWorkout={activeWorkout}
+              activeWorkoutError={activeWorkoutError}
+              isActiveWorkoutLoading={isActiveWorkoutLoading}
+              onRefreshActiveWorkout={() => void refreshActiveWorkout()}
+              onResumeWorkout={() => activeWorkout && void openWorkout(activeWorkout.id)}
+              onOpenWorkout={(workout) => void openWorkout(workout.id, workout.training_day_name ?? undefined)}
+              onGoToOverview={() => {
+                setActiveItem('Обзор')
+                setCurrentWorkout(null)
+                setCurrentWorkoutTitle('')
+                writeAppLocation(null, null)
+              }}
+            />
           )
         ) : (
           <DashboardPage

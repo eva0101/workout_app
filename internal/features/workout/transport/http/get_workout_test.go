@@ -42,8 +42,9 @@ func TestGetWorkoutRoutesAreAuthenticated(t *testing.T) {
 	router.RegisterRoutes(func(next http.Handler) http.Handler { return next }, routes...)
 
 	want := map[string]bool{
-		http.MethodGet + " /workouts/active": false,
-		http.MethodGet + " /workouts/{id}":   false,
+		http.MethodGet + " /workouts/active":  false,
+		http.MethodGet + " /workouts/history": false,
+		http.MethodGet + " /workouts/{id}":    false,
 	}
 	for _, route := range routes {
 		key := route.Method + " " + route.Path

@@ -88,6 +88,20 @@ type StatisticDTOResponse struct {
 	MaximumWeight  float64 `json:"maximum_weight"  example:"8"`
 }
 
+type WorkoutHistoryDTOResponse struct {
+	ID                int       `json:"id" example:"12"`
+	TrainingDayName   *string   `json:"training_day_name" example:"День верхней части тела"`
+	StartedAt         time.Time `json:"started_at" example:"2026-10-15T14:36:25Z"`
+	CompletedAt       time.Time `json:"completed_at" example:"2026-10-15T15:36:25Z"`
+	DurationSeconds   int64     `json:"duration_seconds" example:"3600"`
+	CompletedSets     int64     `json:"completed_sets" example:"8"`
+	TotalWeight       float64   `json:"total_weight" example:"1250"`
+	ActualReps        int64     `json:"actual_reps" example:"72"`
+	PlannedReps       int64     `json:"planned_reps" example:"80"`
+	CompletionPercent *int      `json:"completion_percent" example:"90"`
+	FatigueScore      *int      `json:"fatigue_score" example:"7"`
+}
+
 func ToWorkoutResponse(workout core_domain.WorkoutDetails) WorkoutDTOResponse {
 	response := WorkoutDTOResponse{
 		ID:              workout.ID,
@@ -127,4 +141,20 @@ func ToWorkoutResponse(workout core_domain.WorkoutDetails) WorkoutDTOResponse {
 		response.Exercises = append(response.Exercises, item)
 	}
 	return response
+}
+
+func ToWorkoutHistoryResponse(item core_domain.WorkoutHistoryItem) WorkoutHistoryDTOResponse {
+	return WorkoutHistoryDTOResponse{
+		ID:                item.ID,
+		TrainingDayName:   item.TrainingDayName,
+		StartedAt:         item.StartedAt,
+		CompletedAt:       item.CompletedAt,
+		DurationSeconds:   item.DurationSeconds,
+		CompletedSets:     item.CompletedSets,
+		TotalWeight:       item.TotalWeight,
+		ActualReps:        item.ActualReps,
+		PlannedReps:       item.PlannedReps,
+		CompletionPercent: item.CompletionPercent,
+		FatigueScore:      item.FatigueScore,
+	}
 }
