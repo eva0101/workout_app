@@ -1389,6 +1389,65 @@
                 }
             }
         },
+        "/workouts/statistics/dashboard": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Возвращает общую сводку, регулярность, динамику нагрузки и группы мышц по завершённым тренировкам пользователя",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "workout"
+                ],
+                "summary": "Получение статистики тренировок для вкладки «Статистика»",
+                "parameters": [
+                    {
+                        "enum": [
+                            "7d",
+                            "30d",
+                            "3m",
+                            "1y",
+                            "all"
+                        ],
+                        "type": "string",
+                        "default": "30d",
+                        "description": "Период статистики",
+                        "name": "period",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Статистика тренировок",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_workout_transport_http.WorkoutStatisticsDashboardDTOResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Неизвестный период",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/workouts/{id}": {
             "get": {
                 "security": [
@@ -2164,6 +2223,142 @@
                 "weight": {
                     "type": "number",
                     "example": 40
+                }
+            }
+        },
+        "internal_features_workout_transport_http.WorkoutStatisticsDashboardDTOResponse": {
+            "type": "object",
+            "properties": {
+                "load_dynamics": {
+                    "$ref": "#/definitions/internal_features_workout_transport_http.WorkoutStatisticsLoadDynamicsDTOResponse"
+                },
+                "muscle_groups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_features_workout_transport_http.WorkoutStatisticsMuscleGroupDTOResponse"
+                    }
+                },
+                "regularity": {
+                    "$ref": "#/definitions/internal_features_workout_transport_http.WorkoutStatisticsRegularityDTOResponse"
+                },
+                "summary": {
+                    "$ref": "#/definitions/internal_features_workout_transport_http.WorkoutStatisticsSummaryDTOResponse"
+                }
+            }
+        },
+        "internal_features_workout_transport_http.WorkoutStatisticsLoadDynamicsDTOResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_features_workout_transport_http.WorkoutStatisticsLoadItemDTOResponse"
+                    }
+                },
+                "interval": {
+                    "type": "string",
+                    "enum": [
+                        "day",
+                        "week",
+                        "month"
+                    ],
+                    "example": "day"
+                }
+            }
+        },
+        "internal_features_workout_transport_http.WorkoutStatisticsLoadItemDTOResponse": {
+            "type": "object",
+            "properties": {
+                "actual_reps": {
+                    "type": "integer",
+                    "example": 120
+                },
+                "completed_sets": {
+                    "type": "integer",
+                    "example": 16
+                },
+                "date": {
+                    "type": "string",
+                    "example": "2026-11-11"
+                },
+                "duration_seconds": {
+                    "type": "integer",
+                    "example": 3600
+                },
+                "total_weight": {
+                    "type": "number",
+                    "example": 2400
+                }
+            }
+        },
+        "internal_features_workout_transport_http.WorkoutStatisticsMuscleGroupDTOResponse": {
+            "type": "object",
+            "properties": {
+                "completed_sets": {
+                    "type": "integer",
+                    "example": 24
+                },
+                "name": {
+                    "type": "string",
+                    "example": "chest"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Грудь"
+                }
+            }
+        },
+        "internal_features_workout_transport_http.WorkoutStatisticsRegularityDTOResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_features_workout_transport_http.WorkoutStatisticsRegularityItemDTOResponse"
+                    }
+                },
+                "interval": {
+                    "type": "string",
+                    "enum": [
+                        "day",
+                        "week",
+                        "month"
+                    ],
+                    "example": "day"
+                }
+            }
+        },
+        "internal_features_workout_transport_http.WorkoutStatisticsRegularityItemDTOResponse": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string",
+                    "example": "2026-11-11"
+                },
+                "workouts_count": {
+                    "type": "integer",
+                    "example": 2
+                }
+            }
+        },
+        "internal_features_workout_transport_http.WorkoutStatisticsSummaryDTOResponse": {
+            "type": "object",
+            "properties": {
+                "completed_sets": {
+                    "type": "integer",
+                    "example": 96
+                },
+                "total_duration_seconds": {
+                    "type": "integer",
+                    "example": 43200
+                },
+                "total_weight": {
+                    "type": "number",
+                    "example": 15240
+                },
+                "workouts_count": {
+                    "type": "integer",
+                    "example": 12
                 }
             }
         },

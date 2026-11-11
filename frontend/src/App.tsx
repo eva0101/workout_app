@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar'
 import AuthPage from './pages/AuthPage'
 import DashboardPage from './pages/DashboardPage'
 import ProgramsPage from './pages/ProgramsPage'
+import StatisticsPage from './pages/StatisticsPage'
 import WorkoutHistoryPage from './pages/WorkoutHistoryPage'
 import WorkoutPage from './pages/WorkoutPage'
 import {
@@ -49,6 +50,8 @@ function readAppLocation(): AppLocation {
       ? 'Программы'
       : params.get('section') === 'workouts'
         ? 'Тренировки'
+        : params.get('section') === 'statistics'
+          ? 'Статистика'
         : 'Обзор',
     programId: isProgramRoute ? programId : null,
     dayId: isProgramRoute && Number.isInteger(dayId) && dayId > 0 ? dayId : null,
@@ -60,6 +63,7 @@ function writeAppLocation(
   dayId: number | null,
   keepProgramsSection = false,
   keepWorkoutsSection = false,
+  keepStatisticsSection = false,
 ) {
   const url = new URL(window.location.href)
   url.search = ''
@@ -72,6 +76,8 @@ function writeAppLocation(
     url.searchParams.set('section', 'programs')
   } else if (keepWorkoutsSection) {
     url.searchParams.set('section', 'workouts')
+  } else if (keepStatisticsSection) {
+    url.searchParams.set('section', 'statistics')
   }
 
   window.history.pushState(null, '', url)
@@ -340,7 +346,13 @@ export default function App() {
           setCurrentWorkoutTitle('')
           setWorkoutError('')
           if (item === 'Тренировки') void refreshActiveWorkout()
-          writeAppLocation(null, null, item === 'Программы', item === 'Тренировки')
+          writeAppLocation(
+            null,
+            null,
+            item === 'Программы',
+            item === 'Тренировки',
+            item === 'Статистика',
+          )
         }}
       />
       <main className="main-content">
@@ -418,6 +430,8 @@ export default function App() {
               }}
             />
           )
+        ) : activeItem === 'Статистика' ? (
+          <StatisticsPage />
         ) : (
           <DashboardPage
             activeWorkout={activeWorkout}

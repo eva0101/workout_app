@@ -109,9 +109,9 @@ func TestGetWorkoutSnapshotIntegration(t *testing.T) {
 		if err := pool.QueryRow(ctx, `
 			INSERT INTO workoutapp.workout_exercise (
 				workout_id, source_training_day_exercise_id, exercise_id,
-				exercise_name, exercise_title, sort_order
+				exercise_name, exercise_title, muscle_group_name, sort_order
 			)
-			VALUES ($1, $2, $3, $4, $5, $6)
+			VALUES ($1, $2, $3, $4, $5, 'chest', $6)
 			RETURNING id
 		`, completedWorkoutID, sourceID, catalogExerciseID, "snapshot-name", "Snapshot title", index+1).Scan(destination); err != nil {
 			t.Fatalf("create workout exercise snapshot: %v", err)

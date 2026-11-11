@@ -456,6 +456,101 @@ definitions:
         example: 40
         type: number
     type: object
+  internal_features_workout_transport_http.WorkoutStatisticsDashboardDTOResponse:
+    properties:
+      load_dynamics:
+        $ref: '#/definitions/internal_features_workout_transport_http.WorkoutStatisticsLoadDynamicsDTOResponse'
+      muscle_groups:
+        items:
+          $ref: '#/definitions/internal_features_workout_transport_http.WorkoutStatisticsMuscleGroupDTOResponse'
+        type: array
+      regularity:
+        $ref: '#/definitions/internal_features_workout_transport_http.WorkoutStatisticsRegularityDTOResponse'
+      summary:
+        $ref: '#/definitions/internal_features_workout_transport_http.WorkoutStatisticsSummaryDTOResponse'
+    type: object
+  internal_features_workout_transport_http.WorkoutStatisticsLoadDynamicsDTOResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/internal_features_workout_transport_http.WorkoutStatisticsLoadItemDTOResponse'
+        type: array
+      interval:
+        enum:
+        - day
+        - week
+        - month
+        example: day
+        type: string
+    type: object
+  internal_features_workout_transport_http.WorkoutStatisticsLoadItemDTOResponse:
+    properties:
+      actual_reps:
+        example: 120
+        type: integer
+      completed_sets:
+        example: 16
+        type: integer
+      date:
+        example: "2026-11-11"
+        type: string
+      duration_seconds:
+        example: 3600
+        type: integer
+      total_weight:
+        example: 2400
+        type: number
+    type: object
+  internal_features_workout_transport_http.WorkoutStatisticsMuscleGroupDTOResponse:
+    properties:
+      completed_sets:
+        example: 24
+        type: integer
+      name:
+        example: chest
+        type: string
+      title:
+        example: Грудь
+        type: string
+    type: object
+  internal_features_workout_transport_http.WorkoutStatisticsRegularityDTOResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/internal_features_workout_transport_http.WorkoutStatisticsRegularityItemDTOResponse'
+        type: array
+      interval:
+        enum:
+        - day
+        - week
+        - month
+        example: day
+        type: string
+    type: object
+  internal_features_workout_transport_http.WorkoutStatisticsRegularityItemDTOResponse:
+    properties:
+      date:
+        example: "2026-11-11"
+        type: string
+      workouts_count:
+        example: 2
+        type: integer
+    type: object
+  internal_features_workout_transport_http.WorkoutStatisticsSummaryDTOResponse:
+    properties:
+      completed_sets:
+        example: 96
+        type: integer
+      total_duration_seconds:
+        example: 43200
+        type: integer
+      total_weight:
+        example: 15240
+        type: number
+      workouts_count:
+        example: 12
+        type: integer
+    type: object
   workout_app_internal_core_dto.DTOAuthorizationUserRequest:
     properties:
       login:
@@ -1462,6 +1557,46 @@ paths:
       security:
       - BearerAuth: []
       summary: Получение статистики
+      tags:
+      - workout
+  /workouts/statistics/dashboard:
+    get:
+      description: Возвращает общую сводку, регулярность, динамику нагрузки и группы
+        мышц по завершённым тренировкам пользователя
+      parameters:
+      - default: 30d
+        description: Период статистики
+        enum:
+        - 7d
+        - 30d
+        - 3m
+        - 1y
+        - all
+        in: query
+        name: period
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Статистика тренировок
+          schema:
+            $ref: '#/definitions/internal_features_workout_transport_http.WorkoutStatisticsDashboardDTOResponse'
+        "400":
+          description: Неизвестный период
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Получение статистики тренировок для вкладки «Статистика»
       tags:
       - workout
 securityDefinitions:

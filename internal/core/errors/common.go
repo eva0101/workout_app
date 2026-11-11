@@ -31,6 +31,11 @@ var (
 		http.StatusBadRequest,
 	)
 
+	ErrInvalidStatisticsPeriod = NewAppError(
+		"period must be one of: 7d, 30d, 3m, 1y, all",
+		http.StatusBadRequest,
+	)
+
 	ErrPasswordFewSymbols = NewAppError(
 		"the password must be more than 8 characters long",
 		http.StatusBadRequest,
