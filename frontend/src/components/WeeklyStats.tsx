@@ -1,54 +1,73 @@
-import { ArrowUpRight, Clock3, Flame, Trophy } from 'lucide-react'
+import { Activity, Clock3, Dumbbell, LoaderCircle, RotateCcw } from 'lucide-react'
 
-export default function WeeklyStats() {
+type WeeklyStatsProps = {
+  summary: {
+    workoutsCount: number
+    totalDurationSeconds: number
+    completedSets: number
+  } | null
+  isLoading: boolean
+  error: string
+  onRetry: () => void
+}
+
+function formatNumber(value: number) {
+  return new Intl.NumberFormat('ru-RU').format(value)
+}
+
+function formatDuration(seconds: number) {
+  const totalMinutes = Math.floor(seconds / 60)
+  const hours = Math.floor(totalMinutes / 60)
+  const minutes = totalMinutes % 60
+  if (hours > 0) return `${formatNumber(hours)} ч ${formatNumber(minutes)} мин`
+  return `${formatNumber(minutes)} мин`
+}
+
+export default function WeeklyStats({ summary, isLoading, error, onRetry }: WeeklyStatsProps) {
   return (
-    <section aria-label="Статистика за неделю" className="grid gap-4 sm:grid-cols-2">
-      <article className="metric-card">
-        <div className="flex items-start justify-between">
-          <div className="metric-icon metric-icon-accent">
-            <Flame size={18} strokeWidth={1.8} />
-          </div>
-          <span className="trend-pill">
-            <ArrowUpRight size={12} />
-            +1
-          </span>
+    <section aria-label="Краткая сводка за неделю" className="dashboard-week-summary">
+      <div className="dashboard-week-summary-heading">
+        <div className="dashboard-week-summary-title">
+          <p className="eyebrow">ЭТА НЕДЕЛЯ</p>
+          <h3>Краткая сводка</h3>
         </div>
-        <div className="mt-5 flex items-end justify-between gap-3">
-          <div>
-            <p className="text-[11px] font-medium text-muted">Тренировок за неделю</p>
-            <p className="metric-value mt-1 text-[26px] font-bold leading-none tracking-[-0.055em] text-ink">
-              3<span className="ml-1 text-sm font-medium tracking-normal text-subtle">/ 4</span>
-            </p>
-          </div>
-          <div className="flex h-[44px] items-end gap-1">
-            {[17, 26, 13, 31, 19, 13, 13].map((height, index) => (
-              <span
-                className={`weekly-bar w-[5px] rounded-full ${index < 3 ? 'bg-accent' : ''}`}
-                key={index}
-                style={{ height }}
-              />
-            ))}
-          </div>
-        </div>
-      </article>
+        {isLoading && <LoaderCircle aria-label="Загружаем статистику" className="spin text-muted" size={18} />}
+      </div>
 
-      <article className="metric-card">
-        <div className="flex items-start justify-between">
-          <div className="metric-icon metric-icon-accent-soft">
-            <Clock3 size={18} strokeWidth={1.8} />
-          </div>
-          <div className="metric-icon metric-icon-muted">
-            <Trophy size={16} strokeWidth={1.8} />
-          </div>
+      {error ? (
+        <div className="dashboard-data-error" role="alert">
+          <span>{error}</span>
+          <button className="text-button" type="button" onClick={onRetry}>
+            <RotateCcw size={13} /> Повторить
+          </button>
         </div>
-        <div className="mt-5">
-          <p className="text-[11px] font-medium text-muted">Общее время</p>
-          <p className="metric-value mt-1 text-[26px] font-bold leading-none tracking-[-0.055em] text-ink">
-            2 ч 46 мин
-          </p>
-          <p className="mt-2 text-[10px] text-muted">Суммарная длительность тренировок</p>
+      ) : summary ? (
+        <div className="dashboard-week-metrics">
+          <article className="dashboard-week-metric">
+            <div className="dashboard-week-metric-value">
+              <span className="dashboard-week-metric-icon" aria-hidden="true"><Activity size={17} /></span>
+              <strong>{formatNumber(summary.workoutsCount)}</strong>
+            </div>
+            <p>Завершённые тренировки</p>
+          </article>
+          <article className="dashboard-week-metric">
+            <div className="dashboard-week-metric-value">
+              <span className="dashboard-week-metric-icon" aria-hidden="true"><Clock3 size={17} /></span>
+              <strong>{formatDuration(summary.totalDurationSeconds)}</strong>
+            </div>
+            <p>Время тренировок</p>
+          </article>
+          <article className="dashboard-week-metric">
+            <div className="dashboard-week-metric-value">
+              <span className="dashboard-week-metric-icon" aria-hidden="true"><Dumbbell size={17} /></span>
+              <strong>{formatNumber(summary.completedSets)}</strong>
+            </div>
+            <p>Выполненные подходы</p>
+          </article>
         </div>
-      </article>
+      ) : (
+        <p className="dashboard-data-loading">Загружаем сводку за неделю...</p>
+      )}
     </section>
   )
 }
