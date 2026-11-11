@@ -187,6 +187,7 @@ func (r *WorkoutRepository) startTraining(
 			exercise_id,
 			exercise_name,
 			exercise_title,
+			muscle_group_name,
 			sort_order
 		)
 		SELECT
@@ -195,9 +196,11 @@ func (r *WorkoutRepository) startTraining(
 			e.id,
 			e.name,
 			e.title,
+			mg.name,
 			ROW_NUMBER() OVER (ORDER BY tde.id)::INT
 		FROM workoutapp.training_day_exercises tde
 		JOIN workoutapp.exercise e ON e.id = tde.exercise_id
+		JOIN workoutapp.muscle_group mg ON mg.id = e.muscle_group_id
 		WHERE tde.training_day_id = $2;
 	`, workout.ID, dayID)
 	if err != nil {

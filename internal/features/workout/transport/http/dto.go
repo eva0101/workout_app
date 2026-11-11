@@ -88,6 +88,49 @@ type StatisticDTOResponse struct {
 	MaximumWeight  float64 `json:"maximum_weight"  example:"8"`
 }
 
+type WorkoutStatisticsDashboardDTOResponse struct {
+	Summary      WorkoutStatisticsSummaryDTOResponse       `json:"summary"`
+	Regularity   WorkoutStatisticsRegularityDTOResponse    `json:"regularity"`
+	LoadDynamics WorkoutStatisticsLoadDynamicsDTOResponse  `json:"load_dynamics"`
+	MuscleGroups []WorkoutStatisticsMuscleGroupDTOResponse `json:"muscle_groups"`
+}
+
+type WorkoutStatisticsSummaryDTOResponse struct {
+	WorkoutsCount        int64   `json:"workouts_count" example:"12"`
+	TotalDurationSeconds int64   `json:"total_duration_seconds" example:"43200"`
+	CompletedSets        int64   `json:"completed_sets" example:"96"`
+	TotalWeight          float64 `json:"total_weight" example:"15240"`
+}
+
+type WorkoutStatisticsRegularityDTOResponse struct {
+	Interval string                                       `json:"interval" enums:"day,week,month" example:"day"`
+	Data     []WorkoutStatisticsRegularityItemDTOResponse `json:"data"`
+}
+
+type WorkoutStatisticsRegularityItemDTOResponse struct {
+	Date          string `json:"date" example:"2026-11-11"`
+	WorkoutsCount int64  `json:"workouts_count" example:"2"`
+}
+
+type WorkoutStatisticsLoadDynamicsDTOResponse struct {
+	Interval string                                 `json:"interval" enums:"day,week,month" example:"day"`
+	Data     []WorkoutStatisticsLoadItemDTOResponse `json:"data"`
+}
+
+type WorkoutStatisticsLoadItemDTOResponse struct {
+	Date            string  `json:"date" example:"2026-11-11"`
+	TotalWeight     float64 `json:"total_weight" example:"2400"`
+	CompletedSets   int64   `json:"completed_sets" example:"16"`
+	ActualReps      int64   `json:"actual_reps" example:"120"`
+	DurationSeconds int64   `json:"duration_seconds" example:"3600"`
+}
+
+type WorkoutStatisticsMuscleGroupDTOResponse struct {
+	Name          string `json:"name" example:"chest"`
+	Title         string `json:"title" example:"Грудь"`
+	CompletedSets int64  `json:"completed_sets" example:"24"`
+}
+
 type WorkoutHistoryDTOResponse struct {
 	ID                int       `json:"id" example:"12"`
 	TrainingDayName   *string   `json:"training_day_name" example:"День верхней части тела"`

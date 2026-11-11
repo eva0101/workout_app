@@ -113,9 +113,9 @@ func TestGetWorkoutHistoryIntegration(t *testing.T) {
 		if err := pool.QueryRow(ctx, `
 			INSERT INTO workoutapp.workout_exercise (
 				workout_id, source_training_day_exercise_id, exercise_id,
-				exercise_name, exercise_title, sort_order
+				exercise_name, exercise_title, muscle_group_name, sort_order
 			)
-			VALUES ($1, $2, $3, $4, $4, 1)
+			VALUES ($1, $2, $3, $4, $4, 'chest', 1)
 			RETURNING id
 		`, workoutID, index+1, catalogExerciseID, item.name).Scan(&snapshotExerciseID); err != nil {
 			t.Fatalf("create snapshot exercise for %s: %v", item.name, err)

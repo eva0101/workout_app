@@ -112,6 +112,39 @@ export type WorkoutHistoryItem = {
   fatigue_score?: number | null
 }
 
+export type WorkoutStatisticsPeriod = '7d' | '30d' | '3m' | '1y' | 'all'
+
+export type WorkoutStatisticsDashboard = {
+  summary: {
+    workouts_count: number
+    total_duration_seconds: number
+    completed_sets: number
+    total_weight: number
+  }
+  regularity: {
+    interval: 'day' | 'week' | 'month'
+    data: Array<{
+      date: string
+      workouts_count: number
+    }>
+  }
+  load_dynamics: {
+    interval: 'day' | 'week' | 'month'
+    data: Array<{
+      date: string
+      total_weight: number
+      completed_sets: number
+      actual_reps: number
+      duration_seconds: number
+    }>
+  }
+  muscle_groups: Array<{
+    name: string
+    title: string
+    completed_sets: number
+  }>
+}
+
 export type WorkoutExercise = {
   id: number
   exercise_id: number
@@ -394,6 +427,13 @@ export async function getWorkoutHistory(
 ): Promise<WorkoutHistoryItem[]> {
   const params = new URLSearchParams({ limit: String(limit), offset: String(offset) })
   return apiRequest<WorkoutHistoryItem[]>(`/workouts/history?${params.toString()}`)
+}
+
+export async function getWorkoutStatisticsDashboard(
+  period: WorkoutStatisticsPeriod,
+): Promise<WorkoutStatisticsDashboard> {
+  const params = new URLSearchParams({ period })
+  return apiRequest<WorkoutStatisticsDashboard>(`/workouts/statistics/dashboard?${params.toString()}`)
 }
 
 export async function getWorkout(id: number): Promise<Workout> {

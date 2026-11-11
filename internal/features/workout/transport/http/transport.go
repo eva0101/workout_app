@@ -54,6 +54,12 @@ type WorkoutService interface {
 		userID uuid.UUID,
 	) ([]core_domain.Statistic, error)
 
+	GetStatisticsDashboard(
+		ctx context.Context,
+		userID uuid.UUID,
+		period string,
+	) (core_domain.WorkoutStatisticsDashboard, error)
+
 	GetWorkoutHistory(
 		ctx context.Context,
 		userID uuid.UUID,
@@ -137,6 +143,12 @@ func (h *WorkoutHTTPHandler) Routes() []core_http_server.Route {
 			Method:  http.MethodGet,
 			Path:    "/workouts/statistics",
 			Handler: http.HandlerFunc(h.GetStatistic),
+			Auth:    true,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/workouts/statistics/dashboard",
+			Handler: http.HandlerFunc(h.GetStatisticsDashboard),
 			Auth:    true,
 		},
 	}

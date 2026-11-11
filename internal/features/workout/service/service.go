@@ -2,6 +2,7 @@ package workout_service
 
 import (
 	"context"
+	"time"
 	core_domain "workout_app/internal/core/domain"
 	core_logger "workout_app/internal/core/logger"
 
@@ -51,6 +52,13 @@ type WorkoutRepository interface {
 		ctx context.Context,
 		userID uuid.UUID,
 	) ([]core_domain.Statistic, error)
+
+	GetStatisticsDashboardData(
+		ctx context.Context,
+		userID uuid.UUID,
+		from *time.Time,
+		to time.Time,
+	) ([]core_domain.WorkoutStatisticsData, []core_domain.WorkoutStatisticsMuscleGroup, error)
 
 	GetWorkoutHistory(
 		ctx context.Context,
