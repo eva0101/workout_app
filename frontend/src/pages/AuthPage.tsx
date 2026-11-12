@@ -7,7 +7,17 @@ type AuthMode = 'login' | 'register'
 type AuthPageProps = {
   theme: 'light' | 'dark'
   onToggleTheme: () => void
-  onAuthSuccess: () => void
+  onAuthSuccess: (login: string) => void
+}
+
+function getAuthErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    const message = error.message.trim()
+    if (message === 'login or password is incorrect') return 'Неверный логин или пароль.'
+    if (message === 'user already exists') return 'Пользователь с таким логином уже существует.'
+    if (message) return message
+  }
+  return 'Не удалось выполнить запрос. Проверьте соединение.'
 }
 
 export default function AuthPage({ theme, onToggleTheme, onAuthSuccess }: AuthPageProps) {
@@ -55,7 +65,7 @@ export default function AuthPage({ theme, onToggleTheme, onAuthSuccess }: AuthPa
       if (mode === 'login') {
         const response = await loginUser({ login, password })
         setStoredToken(response.token)
-        onAuthSuccess()
+        onAuthSuccess(login)
         return
       }
 
@@ -64,12 +74,7 @@ export default function AuthPage({ theme, onToggleTheme, onAuthSuccess }: AuthPa
       setForm({ login: '', password: '' })
       setMode('login')
     } catch (authError) {
-      const message =
-        authError instanceof Error && authError.message
-          ? authError.message
-          : 'Не удалось выполнить запрос. Проверьте соединение.'
-
-      setError(message)
+      setError(getAuthErrorMessage(authError))
     } finally {
       setIsSubmitting(false)
     }

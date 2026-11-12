@@ -12,9 +12,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import WeeklyStats from '../components/WeeklyStats'
 import WorkoutCalendarDialog from '../components/WorkoutCalendarDialog'
 import {
+  getPrograms,
   getWorkoutHistory,
   getScheduleWithDayNames,
   getWorkoutStatisticsDashboard,
+  type Program,
   type ScheduledWorkoutWithDayName,
   type Workout,
   type WorkoutHistoryItem,
@@ -22,6 +24,7 @@ import {
 } from '../lib/api'
 
 type DashboardPageProps = {
+  onWelcomeMessageChange: (message: DashboardWelcomeMessage) => void
   activeWorkout: Workout | null
   activeWorkoutError: string
   isActiveWorkoutLoading: boolean
@@ -30,6 +33,30 @@ type DashboardPageProps = {
   onResumeWorkout: () => void
   onOpenPrograms: () => void
 }
+
+export type DashboardWelcomeMessage = {
+  title: string
+  description: string
+}
+
+const WELCOME_MESSAGES = {
+  welcome: {
+    title: 'Добро пожаловать',
+    description: 'Создайте свою первую программу тренировок и начните путь к новым результатам.',
+  },
+  rest: {
+    title: 'Сегодня день отдыха',
+    description: 'Отдыхайте и набирайтесь сил.',
+  },
+  workout: {
+    title: 'Время двигаться вперёд',
+    description: 'Ваш тренировочный план готов. Продолжайте работать над собой.',
+  },
+  completed: {
+    title: 'Отличная работа!',
+    description: 'Сегодняшняя тренировка завершена. Время восстановиться.',
+  },
+} satisfies Record<string, DashboardWelcomeMessage>
 
 function getLocalDate() {
   const now = new Date()
@@ -142,6 +169,7 @@ function getErrorMessage(error: unknown) {
 }
 
 export default function DashboardPage({
+  onWelcomeMessageChange,
   activeWorkout,
   activeWorkoutError,
   isActiveWorkoutLoading,
@@ -155,6 +183,9 @@ export default function DashboardPage({
   const [scheduledWorkouts, setScheduledWorkouts] = useState<ScheduledWorkoutWithDayName[]>([])
   const [isScheduleLoading, setIsScheduleLoading] = useState(true)
   const [scheduleError, setScheduleError] = useState('')
+  const [programCount, setProgramCount] = useState<number | null>(null)
+  const [isProgramsLoading, setIsProgramsLoading] = useState(true)
+  const [programsError, setProgramsError] = useState('')
   const [startError, setStartError] = useState('')
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   const [calendarDate, setCalendarDate] = useState(today)
@@ -168,11 +199,11 @@ export default function DashboardPage({
   const [latestWorkoutError, setLatestWorkoutError] = useState('')
   const [historyRetry, setHistoryRetry] = useState(0)
 
-  const loadSchedule = useCallback(async () => {
+  const loadSchedule = useCallback(async (programs?: Program[]) => {
     setIsScheduleLoading(true)
     setScheduleError('')
     try {
-      setScheduledWorkouts(await getScheduleWithDayNames('0001-01-01', '9999-12-31'))
+      setScheduledWorkouts(await getScheduleWithDayNames('0001-01-01', '9999-12-31', programs))
     } catch (error) {
       setScheduleError(getErrorMessage(error))
     } finally {
@@ -181,7 +212,27 @@ export default function DashboardPage({
   }, [])
 
   useEffect(() => {
-    void loadSchedule()
+    let cancelled = false
+    getPrograms()
+      .then((programs) => {
+        if (cancelled) return
+        setProgramCount(programs.length)
+        void loadSchedule(programs)
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setProgramsError(getDashboardDataError(error, 'Не удалось определить список программ.'))
+          setScheduleError(getDashboardDataError(error, 'Не удалось загрузить расписание.'))
+          setIsScheduleLoading(false)
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setIsProgramsLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
   }, [loadSchedule])
 
   useEffect(() => {
@@ -251,7 +302,46 @@ export default function DashboardPage({
     () => new Set(recentHistory.map(({ completed_at }) => getLocalDateKey(completed_at))),
     [recentHistory],
   )
+  const hasCompletedWorkoutToday = recentHistory.some(
+    ({ completed_at }) => getLocalDateKey(completed_at) === today,
+  )
   const canStart = !activeWorkout && !isActiveWorkoutLoading && !activeWorkoutError && !isStartingWorkout
+
+  useEffect(() => {
+    if (
+      isProgramsLoading ||
+      programCount === null ||
+      isScheduleLoading ||
+      scheduleError ||
+      isLatestWorkoutLoading ||
+      latestWorkoutError ||
+      isActiveWorkoutLoading ||
+      activeWorkoutError
+    ) return
+
+    const welcomeMessage = hasCompletedWorkoutToday
+      ? WELCOME_MESSAGES.completed
+      : activeWorkout || todayWorkouts.length > 0
+        ? WELCOME_MESSAGES.workout
+        : programCount === 0
+          ? WELCOME_MESSAGES.welcome
+          : WELCOME_MESSAGES.rest
+
+    onWelcomeMessageChange(welcomeMessage)
+  }, [
+    activeWorkout,
+    activeWorkoutError,
+    hasCompletedWorkoutToday,
+    isActiveWorkoutLoading,
+    isLatestWorkoutLoading,
+    isProgramsLoading,
+    isScheduleLoading,
+    latestWorkoutError,
+    onWelcomeMessageChange,
+    programCount,
+    scheduleError,
+    todayWorkouts,
+  ])
 
   async function startWorkout(workout: ScheduledWorkoutWithDayName) {
     if (!canStart) return
@@ -272,26 +362,26 @@ export default function DashboardPage({
   }
 
   return (
-    <section className="dashboard-content">
-      <div className="section-heading dashboard-section-heading">
+    <section className="dashboard-content dashboard-home-content">
+      <div className="section-heading dashboard-home-heading">
         <div>
-          <p className="eyebrow">ВАШ ПЛАН</p>
-          <h2 className="mt-1 text-[20px] font-semibold tracking-[-0.035em] text-ink">Обзор</h2>
+          <p className="eyebrow">ТВОИ ТРЕНИРОВКИ</p>
+          <h1>Главная</h1>
+          <p>Твой план, активность и результаты тренировок в одном месте.</p>
         </div>
       </div>
-
+      {programsError && <p className="program-alert mb-0" role="alert">{programsError}</p>}
       {activeWorkoutError && <p className="program-alert mb-4" role="alert">{activeWorkoutError}</p>}
 
-      <div className="dashboard-surface">
-        <WeeklyStats
-          summary={weeklySummary}
-          isLoading={isStatisticsLoading}
-          error={statisticsError}
-          onRetry={() => setStatisticsRetry((current) => current + 1)}
-        />
+      <WeeklyStats
+        summary={weeklySummary}
+        isLoading={isStatisticsLoading}
+        error={statisticsError}
+        onRetry={() => setStatisticsRetry((current) => current + 1)}
+      />
 
-        <div className="dashboard-overview-grid">
-          <section className="dashboard-hero-card" aria-labelledby="dashboard-today-title">
+      <div className="dashboard-overview-grid">
+        <section className="dashboard-hero-card" aria-labelledby="dashboard-today-title">
             <div className="dashboard-hero-copy">
               <p className="eyebrow">
                 {activeWorkout ? 'ТРЕНИРОВКА В ПРОЦЕССЕ' : 'СЕГОДНЯ'}
@@ -376,9 +466,9 @@ export default function DashboardPage({
               )}
               {startError && <p className="program-alert mt-4" role="alert">{startError}</p>}
             </div>
-          </section>
+        </section>
 
-          <section className="dashboard-side-card" aria-labelledby="dashboard-upcoming-title">
+        <section className="dashboard-side-card panel-card" aria-labelledby="dashboard-upcoming-title">
             <div className="dashboard-widget-heading">
               <div>
                 <p className="eyebrow">ВАШ КАЛЕНДАРЬ</p>
@@ -424,8 +514,8 @@ export default function DashboardPage({
                 Все даты <ChevronRight size={14} />
               </button>
             </div>
-          </section>
-        </div>
+        </section>
+      </div>
 
         {activeWorkout && todayWorkouts.length > 0 && (
           <p className="dashboard-active-note">
@@ -433,8 +523,8 @@ export default function DashboardPage({
           </p>
         )}
 
-        <div className="dashboard-bottom-grid">
-          <section className="dashboard-week-activity" aria-labelledby="dashboard-week-activity-title">
+      <div className="dashboard-bottom-grid">
+        <section className="dashboard-week-activity panel-card" aria-labelledby="dashboard-week-activity-title">
             <div className="dashboard-widget-heading">
               <div>
                 <p className="eyebrow">ВАША АКТИВНОСТЬ</p>
@@ -495,9 +585,9 @@ export default function DashboardPage({
                 <RotateCcw size={13} /> Повторить загрузку
               </button>
             )}
-          </section>
+        </section>
 
-          <section className="dashboard-latest-workout" aria-labelledby="dashboard-latest-title">
+        <section className="dashboard-latest-workout panel-card" aria-labelledby="dashboard-latest-title">
             <div className="dashboard-widget-heading">
               <div>
                 <p className="eyebrow">ВАША ИСТОРИЯ</p>
@@ -543,8 +633,7 @@ export default function DashboardPage({
               <p>Завершённых тренировок пока нет.</p>
             </div>
           )}
-          </section>
-        </div>
+        </section>
       </div>
 
       <WorkoutCalendarDialog

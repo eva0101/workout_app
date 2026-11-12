@@ -150,7 +150,7 @@ export default function WorkoutHistoryPage({
       <div className="section-heading workout-history-heading">
         <div>
           <p className="eyebrow">ВАША АКТИВНОСТЬ</p>
-          <h1>Тренировки</h1>
+          <h1>История тренировок</h1>
           <p className="workout-history-intro">Завершённые занятия и ваш прогресс</p>
         </div>
       </div>
@@ -181,13 +181,6 @@ export default function WorkoutHistoryPage({
           </button>
         </div>
       )}
-
-      <div className="workout-history-list-heading">
-        <div>
-          <p className="eyebrow">АРХИВ</p>
-          <h2>История завершённых тренировок</h2>
-        </div>
-      </div>
 
       {historyError && (
         <div className="program-alert mt-4" role="alert">

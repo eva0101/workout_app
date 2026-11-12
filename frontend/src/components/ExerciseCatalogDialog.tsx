@@ -1,5 +1,5 @@
 import { ArrowLeft, ChevronRight, Dumbbell, LoaderCircle, Plus, Trash2, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import {
   createTrainingDayExercise,
   getExercises,
@@ -50,7 +50,10 @@ export default function ExerciseCatalogDialog({
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
   const [canRetryLoad, setCanRetryLoad] = useState(false)
-  const [nextSetId, setNextSetId] = useState(1)
+  const nextSetId = useRef(1)
+  const dialogRef = useRef<HTMLElement>(null)
+  const lastSetRef = useRef<HTMLDivElement>(null)
+  const pendingScrollSetId = useRef<number | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -121,9 +124,27 @@ export default function ExerciseCatalogDialog({
   }
 
   function addSet() {
-    setSets((current) => [...current, { id: nextSetId, repetitions: '', weight: '' }])
-    setNextSetId((current) => current + 1)
+    const id = nextSetId.current
+    nextSetId.current += 1
+    pendingScrollSetId.current = id
+    setSets((current) => [...current, { id, repetitions: '', weight: '' }])
   }
+
+  useLayoutEffect(() => {
+    const pendingSetId = pendingScrollSetId.current
+    if (pendingSetId === null) return
+
+    pendingScrollSetId.current = null
+    const dialog = dialogRef.current
+    const lastSet = lastSetRef.current
+    if (!dialog || !lastSet || Number(lastSet.dataset.setId) !== pendingSetId) return
+
+    const visibleBottom = dialog.getBoundingClientRect().top + dialog.clientTop + dialog.clientHeight
+    const overflow = lastSet.getBoundingClientRect().bottom + 12 - visibleBottom
+    if (overflow > 0) {
+      dialog.scrollTo({ top: dialog.scrollTop + overflow, behavior: 'smooth' })
+    }
+  }, [sets])
 
   function updateSet(id: number, field: 'repetitions' | 'weight', value: string) {
     setSets((current) => current.map((set) => set.id === id ? { ...set, [field]: value } : set))
@@ -192,6 +213,7 @@ export default function ExerciseCatalogDialog({
         aria-labelledby="exercise-catalog-title"
         aria-modal="true"
         className={`program-create-dialog exercise-catalog-dialog${view === 'detail' ? ' exercise-detail-dialog' : ''}`}
+        ref={dialogRef}
         role="dialog"
       >
         <div className="program-create-heading exercise-catalog-heading">
@@ -333,7 +355,12 @@ export default function ExerciseCatalogDialog({
             {sets.length > 0 ? (
               <div className="planned-set-list">
                 {sets.map((set, index) => (
-                  <div className="planned-set-row" key={set.id}>
+                <div
+                  className="planned-set-row"
+                  key={set.id}
+                  ref={set.id === sets[sets.length - 1]?.id ? lastSetRef : undefined}
+                  data-set-id={set.id}
+                >
                     <span className="planned-set-number">{String(index + 1).padStart(2, '0')}</span>
                     <label>
                       <span>Повторения</span>
