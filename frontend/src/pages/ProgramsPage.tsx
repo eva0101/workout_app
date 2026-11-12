@@ -784,7 +784,7 @@ export default function ProgramsPage({
                   autoFocus
                   value={dayName}
                   onChange={(event) => setDayName(event.target.value)}
-                  placeholder="Например, День спины"
+                  placeholder="Например: День спины и бицепса"
                   disabled={isDaySaving}
                 />
                 <p className="program-form-hint">Название должно содержать от 3 до 100 символов.</p>
@@ -869,7 +869,7 @@ export default function ProgramsPage({
                 maxLength={100}
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                placeholder="Например, Силовая база"
+                placeholder="Например: Программа на развитие силы"
               />
               <p className="program-form-hint">Название должно содержать от 3 до 100 символов.</p>
               {formError && <p className="program-inline-error" role="alert">{formError}</p>}
@@ -902,9 +902,6 @@ export default function ProgramsPage({
           <div className="program-empty-icon"><FolderPlus size={23} /></div>
           <h3>Пока нет программ</h3>
           <p>Создай первую программу, чтобы подготовить план тренировок.</p>
-          <button className="program-primary-button" type="button" onClick={() => setIsCreateOpen(true)}>
-            <Plus size={17} /> Создать программу
-          </button>
         </div>
       ) : (
         <div className="program-card-grid">

@@ -2,15 +2,14 @@ import {
   BarChart3,
   Dumbbell,
   LayoutDashboard,
-  Settings2,
   Target,
 } from 'lucide-react'
 
 const navItems = [
-  { label: 'Обзор', icon: LayoutDashboard },
-  { label: 'Программы', icon: Target },
-  { label: 'Тренировки', icon: Dumbbell },
-  { label: 'Статистика', icon: BarChart3 },
+  { id: 'Обзор', label: 'Главная', icon: LayoutDashboard },
+  { id: 'Программы', label: 'Программы', icon: Target },
+  { id: 'Тренировки', label: 'История', icon: Dumbbell },
+  { id: 'Статистика', label: 'Статистика', icon: BarChart3 },
 ]
 
 type SidebarProps = {
@@ -46,53 +45,27 @@ export default function Sidebar({ activeItem, onNavigate }: SidebarProps) {
           Меню
         </div>
         <nav className="mt-3 flex flex-col gap-1" aria-label="Основная навигация">
-          {navItems.map(({ label, icon: Icon }) => (
+          {navItems.map(({ id, label, icon: Icon }) => (
             <button
-              className={`nav-link ${activeItem === label ? 'nav-link-active' : ''}`}
-              key={label}
-              onClick={() => onNavigate(label)}
+              className={`nav-link ${activeItem === id ? 'nav-link-active' : ''}`}
+              key={id}
+              onClick={() => onNavigate(id)}
               type="button"
             >
               <Icon size={18} strokeWidth={1.8} />
               <span>{label}</span>
-              {label === 'Обзор' && (
-                <span className="nav-indicator" aria-hidden="true" />
-              )}
             </button>
           ))}
         </nav>
-
-        <div className="sidebar-bottom">
-          <div className="plan-card">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-ink">Календарь занятий</span>
-              <Target size={16} className="text-accent" />
-            </div>
-            <p className="mt-2 text-xs leading-5 text-muted">
-              Запланируй тренировочные дни в календаре и занимайся в удобном ритме.
-            </p>
-            <button
-              className="text-button mt-2"
-              type="button"
-              onClick={() => onNavigate('Программы')}
-            >
-              Мои программы
-            </button>
-          </div>
-          <button className="nav-link mt-3" type="button" onClick={() => onNavigate('Настройки')}>
-            <Settings2 size={18} strokeWidth={1.8} />
-            <span>Настройки</span>
-          </button>
-        </div>
       </aside>
 
       <nav className="mobile-nav lg:hidden" aria-label="Мобильная навигация">
-        {navItems.map(({ label, icon: Icon }) => (
+        {navItems.map(({ id, label, icon: Icon }) => (
           <button
-            aria-current={activeItem === label ? 'page' : undefined}
-            className={`mobile-nav-link ${activeItem === label ? 'mobile-nav-active' : ''}`}
-            key={label}
-            onClick={() => onNavigate(label)}
+            aria-current={activeItem === id ? 'page' : undefined}
+            className={`mobile-nav-link ${activeItem === id ? 'mobile-nav-active' : ''}`}
+            key={id}
+            onClick={() => onNavigate(id)}
             type="button"
           >
             <Icon size={19} strokeWidth={1.9} />

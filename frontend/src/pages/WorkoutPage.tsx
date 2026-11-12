@@ -427,7 +427,7 @@ export default function WorkoutPage({
   return (
     <section className="page-content workout-session-page">
       <button className="program-back-button" type="button" onClick={onBack}>
-        <ArrowLeft size={16} /> {readOnly ? 'К истории тренировок' : 'К обзору'}
+        <ArrowLeft size={16} /> {readOnly ? 'К истории тренировок' : 'На главную'}
       </button>
 
       <header className="session-overview-header">

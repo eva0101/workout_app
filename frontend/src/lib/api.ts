@@ -1,4 +1,5 @@
 export const AUTH_TOKEN_KEY = 'workout-app-token'
+export const AUTH_LOGIN_KEY = 'workout-app-login'
 
 export type AuthRequest = {
   login: string
@@ -201,14 +202,24 @@ export const UNAUTHORIZED_EVENT = 'workout-app:unauthorized'
 
 function clearAuthToken() {
   localStorage.removeItem(AUTH_TOKEN_KEY)
+  localStorage.removeItem(AUTH_LOGIN_KEY)
 }
 
 export function getStoredToken() {
   return localStorage.getItem(AUTH_TOKEN_KEY)
 }
 
+export function getStoredLogin() {
+  const login = localStorage.getItem(AUTH_LOGIN_KEY)?.trim()
+  return login || null
+}
+
 export function setStoredToken(token: string) {
   localStorage.setItem(AUTH_TOKEN_KEY, token)
+}
+
+export function setStoredLogin(login: string) {
+  localStorage.setItem(AUTH_LOGIN_KEY, login)
 }
 
 export function removeStoredToken() {
@@ -390,11 +401,12 @@ export async function getSchedule(from: string, to: string): Promise<ScheduledWo
 export async function getScheduleWithDayNames(
   from: string,
   to: string,
+  availablePrograms?: Program[],
 ): Promise<ScheduledWorkoutWithDayName[]> {
   const scheduledWorkouts = await getSchedule(from, to)
   if (scheduledWorkouts.length === 0) return []
 
-  const programs = await getPrograms()
+  const programs = availablePrograms ?? await getPrograms()
   const programDetails = await Promise.all(programs.map(({ id }) => getProgram(id)))
   const trainingDayNames = new Map(
     programDetails.flatMap((program) =>

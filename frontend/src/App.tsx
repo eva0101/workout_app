@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import DashboardHeader from './components/DashboardHeader'
 import Sidebar from './components/Sidebar'
 import AuthPage from './pages/AuthPage'
-import DashboardPage from './pages/DashboardPage'
+import DashboardPage, { type DashboardWelcomeMessage } from './pages/DashboardPage'
 import ProgramsPage from './pages/ProgramsPage'
 import StatisticsPage from './pages/StatisticsPage'
 import WorkoutHistoryPage from './pages/WorkoutHistoryPage'
@@ -12,9 +12,11 @@ import {
   completeWorkoutExercise,
   executeWorkoutSet,
   getActiveWorkout,
+  getStoredLogin,
   getStoredToken,
   getWorkout,
   removeStoredToken,
+  setStoredLogin,
   startScheduledWorkout,
   UNAUTHORIZED_EVENT,
   type ApiError,
@@ -22,6 +24,11 @@ import {
 } from './lib/api'
 
 type Theme = 'light' | 'dark'
+
+const DEFAULT_WELCOME_MESSAGE: DashboardWelcomeMessage = {
+  title: 'Добро пожаловать',
+  description: 'Создайте свою первую программу тренировок и начните путь к новым результатам.',
+}
 
 function getInitialTheme(): Theme {
   const savedTheme = localStorage.getItem('workout-app-theme')
@@ -105,6 +112,8 @@ export default function App() {
   const [activeItem, setActiveItem] = useState(initialLocation.activeItem)
   const [theme, setTheme] = useState<Theme>(getInitialTheme)
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(getIsAuthenticated)
+  const [userLogin, setUserLogin] = useState<string | null>(getStoredLogin)
+  const [welcomeMessage, setWelcomeMessage] = useState(DEFAULT_WELCOME_MESSAGE)
   const [selectedProgramId, setSelectedProgramId] = useState<number | null>(initialLocation.programId)
   const [selectedDayId, setSelectedDayId] = useState<number | null>(initialLocation.dayId)
   const [activeWorkout, setActiveWorkout] = useState<Workout | null>(null)
@@ -164,6 +173,7 @@ export default function App() {
   useEffect(() => {
     function handleUnauthorized() {
       setIsAuthenticated(false)
+      setUserLogin(null)
       setActiveItem('Обзор')
       setSelectedProgramId(null)
       setSelectedDayId(null)
@@ -200,6 +210,7 @@ export default function App() {
   function handleLogout() {
     removeStoredToken()
     setIsAuthenticated(false)
+    setUserLogin(null)
     setActiveItem('Обзор')
     setSelectedProgramId(null)
     setSelectedDayId(null)
@@ -331,13 +342,23 @@ export default function App() {
   }
 
   if (!isAuthenticated) {
-    return <AuthPage theme={theme} onToggleTheme={toggleTheme} onAuthSuccess={() => setIsAuthenticated(true)} />
+    return (
+      <AuthPage
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        onAuthSuccess={(login) => {
+          setStoredLogin(login)
+          setUserLogin(login)
+          setIsAuthenticated(true)
+        }}
+      />
+    )
   }
 
   return (
     <div className="app-shell" data-theme={theme}>
       <Sidebar
-        activeItem={activeItem}
+        activeItem={currentWorkout?.status === 'in_progress' ? '' : activeItem}
         onNavigate={(item) => {
           setActiveItem(item)
           setSelectedProgramId(null)
@@ -358,6 +379,10 @@ export default function App() {
       <main className="main-content">
         <DashboardHeader
           theme={theme}
+          login={userLogin}
+          isHomePage={activeItem === 'Обзор'}
+          welcomeTitle={welcomeMessage.title}
+          welcomeDescription={welcomeMessage.description}
           onToggleTheme={toggleTheme}
           onLogout={handleLogout}
         />
@@ -434,6 +459,7 @@ export default function App() {
           <StatisticsPage />
         ) : (
           <DashboardPage
+            onWelcomeMessageChange={setWelcomeMessage}
             activeWorkout={activeWorkout}
             activeWorkoutError={activeWorkoutError}
             isActiveWorkoutLoading={isActiveWorkoutLoading}

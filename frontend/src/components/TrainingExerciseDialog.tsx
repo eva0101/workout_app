@@ -1,5 +1,5 @@
 import { Dumbbell, LoaderCircle, Plus, Trash2, X } from 'lucide-react'
-import { useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import {
   deleteTrainingDayExercise,
   type CatalogExercise,
@@ -49,6 +49,10 @@ export default function TrainingExerciseDialog({
   const [error, setError] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const dialogRef = useRef<HTMLElement>(null)
+  const lastSetRef = useRef<HTMLLIElement>(null)
+  const pendingScrollSetId = useRef<number | null>(null)
+  const nextSetId = useRef(Math.max(0, ...exercise.planned_sets.map(({ set_number }) => set_number)) + 1)
   const imagePath = imageSource(catalogExercise?.image_path ?? null)
   const exerciseName = catalogExercise?.title ?? `Упражнение #${exercise.exercise_id}`
 
@@ -65,15 +69,34 @@ export default function TrainingExerciseDialog({
   const isBusy = isDeleting || isSaving
 
   function addSet() {
+    const id = nextSetId.current
+    nextSetId.current += 1
+    pendingScrollSetId.current = id
     setSets((current) => [
       ...current,
       {
-        id: Math.max(0, ...current.map(({ id }) => id)) + 1,
+        id,
         repetitions: '',
         weight: '',
       },
     ])
   }
+
+  useLayoutEffect(() => {
+    const pendingSetId = pendingScrollSetId.current
+    if (pendingSetId === null) return
+
+    pendingScrollSetId.current = null
+    const dialog = dialogRef.current
+    const lastSet = lastSetRef.current
+    if (!dialog || !lastSet || Number(lastSet.dataset.setId) !== pendingSetId) return
+
+    const visibleBottom = dialog.getBoundingClientRect().top + dialog.clientTop + dialog.clientHeight
+    const overflow = lastSet.getBoundingClientRect().bottom + 12 - visibleBottom
+    if (overflow > 0) {
+      dialog.scrollTo({ top: dialog.scrollTop + overflow, behavior: 'smooth' })
+    }
+  }, [sets])
 
   function updateSet(id: number, field: 'repetitions' | 'weight', value: string) {
     setSets((current) => current.map((set) => set.id === id ? { ...set, [field]: value } : set))
@@ -123,6 +146,7 @@ export default function TrainingExerciseDialog({
         aria-labelledby="training-exercise-title"
         aria-modal="true"
         className="program-create-dialog exercise-catalog-dialog exercise-detail-dialog"
+        ref={dialogRef}
         role="dialog"
       >
         <div className="program-create-heading exercise-catalog-heading">
@@ -179,7 +203,11 @@ export default function TrainingExerciseDialog({
         {sets.length > 0 ? (
           <ol className="training-exercise-detail-sets">
             {sets.map((set, index) => (
-              <li key={set.id}>
+              <li
+                key={set.id}
+                ref={set.id === sets[sets.length - 1]?.id ? lastSetRef : undefined}
+                data-set-id={set.id}
+              >
                 <span className="training-exercise-set-number">
                   <span className="training-exercise-set-prefix">Подход </span>
                   {index + 1}

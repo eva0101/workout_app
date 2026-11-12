@@ -25,7 +25,7 @@ function formatDuration(seconds: number) {
 
 export default function WeeklyStats({ summary, isLoading, error, onRetry }: WeeklyStatsProps) {
   return (
-    <section aria-label="Краткая сводка за неделю" className="dashboard-week-summary">
+    <section aria-label="Краткая сводка за неделю" className="dashboard-week-summary panel-card">
       <div className="dashboard-week-summary-heading">
         <div className="dashboard-week-summary-title">
           <p className="eyebrow">ЭТА НЕДЕЛЯ</p>
